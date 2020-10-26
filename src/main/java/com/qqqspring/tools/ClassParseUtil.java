@@ -13,10 +13,11 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
+ * Class相关操作，这里使用
  * @author qqq
  * 2020/10/24
  */
-public abstract class ClassParseUtil {
+public class ClassParseUtil {
 
 
     public static List<Class<?>> getClasses(String packageName){
@@ -70,6 +71,7 @@ public abstract class ClassParseUtil {
                 String className = packageName + "." + fileName;
                 try {
                     Class<?> klass = Class.forName(className);//取出所有的类
+                    //Class<?> klass = Thread.currentThread().getContextClassLoader().loadClass(className);
                     //不扫描注解类、枚举类、接口和八大基本类型。
                     if(klass.isAnnotation()
                             ||klass.isEnum()

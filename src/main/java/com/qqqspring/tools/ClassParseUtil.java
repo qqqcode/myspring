@@ -13,17 +13,18 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * @author Johnson
+ * @author qqq
  * 2020/10/24
  */
-public class ClassParseUtil {
+public abstract class ClassParseUtil {
+
 
     public static List<Class<?>> getClasses(String packageName){
         String packOpperPath = packageName.replace(".","/");
         //线程上下文类加载器得到当前的classpath的绝对路径.（动态加载资源）
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+        List<Class<?>> classes = new ArrayList<Class<?>>();
         try {
-           //(Thread.currentThread().getContextClassLoader().getResource(""))
            //(来得到当前的classpath的绝对路径的URI表示法。)
            Enumeration<URL> resources = classloader.getResources(packOpperPath);
            while(resources.hasMoreElements()) {
@@ -31,15 +32,14 @@ public class ClassParseUtil {
                URL url = resources.nextElement();
                //url.getProtocol()是获取URL的HTTP协议。
                if (url.getProtocol().equals("jar")) { //判断是不是jar包
-                   scanPackage(url);
+                   scanPackage(url,classes);
                } else {
-                   //此方法不会自动将链接中的非法字符转义。
-                   //而在File转化成URI的时候，会将链接中的特殊字符如#或!等字符进行编码。
+                   //此方法不会自动将链接中的非法字符转义。而在File转化成URI的时候，会将链接中的特殊字符如#或!等字符进行编码。
                    File file = new File(url.toURI());
                    if (!file.exists()) {
                        continue;
                    }
-                   scanPackage(packageName, file);
+                   scanPackage(packageName, file,classes);
                }
            }
         } catch (IOException e) {
@@ -47,11 +47,11 @@ public class ClassParseUtil {
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        return new ArrayList<Class<?>>();
+        return classes;
     }
 
     //扫描一般的包。
-    private static void scanPackage(String packageName , File currentFile) {
+    private static void scanPackage(String packageName , File currentFile,List<Class<?>> classes) {
         File[] fileList = currentFile.listFiles(new FileFilter() {
             //FileFilter是文件过滤器,源代码只写了一个accapt的抽象方法。
             public boolean accept(File pathName) {
@@ -64,7 +64,7 @@ public class ClassParseUtil {
 
         for(File file : fileList) {
             if(file.isDirectory()) {
-                scanPackage(packageName + "." + file.getName(),file);
+                scanPackage(packageName + "." + file.getName(),file,classes);
             }else {
                 String fileName = file.getName().replace(".class", "");
                 String className = packageName + "." + fileName;
@@ -77,7 +77,7 @@ public class ClassParseUtil {
                             ||klass.isPrimitive()) {
                         continue;
                     }
- //                   dealClass(klass);
+                    classes.add(klass);
                 } catch (ClassNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -87,7 +87,7 @@ public class ClassParseUtil {
 
 
     //扫描jar包方法。
-    private static void scanPackage(URL url) throws IOException {
+    private static void scanPackage(URL url,List<Class<?>> classes) throws IOException {
         JarURLConnection urlConnection = (JarURLConnection) url.openConnection();
         JarFile jarfile = urlConnection.getJarFile();
         Enumeration<JarEntry> jarEntries = jarfile.entries();
@@ -98,18 +98,16 @@ public class ClassParseUtil {
                 continue;
             }
             String className = jarName.replace(".class", "").replaceAll("/", ".");
-
             try {
                 Class<?> klass = Class.forName(className);
                 if (klass.isAnnotation() || klass.isInterface() || klass.isEnum() || klass.isPrimitive()) {
+                    classes.add(klass);
                     continue;
                 }
-   //             dealClass(klass);
             } catch (ClassNotFoundException e) {
                 e.printStackTrace();
             }
         }
     }
-
 
 }

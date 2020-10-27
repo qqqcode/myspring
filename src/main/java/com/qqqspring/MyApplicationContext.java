@@ -16,7 +16,7 @@ public class MyApplicationContext {
     public MyApplicationContext(Class configClass){
         ComponentScan annotation = (ComponentScan) configClass.getAnnotation(ComponentScan.class);
         String scanPath = annotation.value();
-        System.out.println(scanPath);
+        System.out.println("开启扫描：扫描路径为" + scanPath);
         try {
             this.initBeans(scanPath);
         } catch (Exception e) {
@@ -41,9 +41,12 @@ public class MyApplicationContext {
 
     private void initBeans(String sacnPath) throws Exception {
         //使用java的反射机制扫包,[获取当前包下所有的类]
+        System.out.println("扫描路径下所有的类");
         List<Class<?>> classes = ClassParseUtil.getClasses(sacnPath);
         //判断类上面是否存在注入的bean的注解
+        System.out.println("开始初始化bean");
         ConcurrentHashMap<String, BeanDefinition> classExisAnnotation = findClassExisAnnotation(classes);
+        System.out.println("初始化bean完成");
         if (classExisAnnotation.isEmpty()) {
             throw new Exception("该包下没有任何类加上注解");
         }
@@ -54,21 +57,30 @@ public class MyApplicationContext {
             throw new Exception("没有找到类");
         }
         ConcurrentHashMap<String,BeanDefinition> concurrentHashMap = new ConcurrentHashMap<String, BeanDefinition>();
+        beanDefinitionMap = new ConcurrentHashMap<String, BeanDefinition>();
         //遍历扫描的所有类，并识别所有有Component注释的类
         for (Class<?> aClass : classes) {
             if(aClass.isAnnotationPresent(Component.class)){
                 Component component = aClass.getAnnotation(Component.class);
-                Scope scope = aClass.getAnnotation(Scope.class);
                 String beanName = component.value();
 
                 BeanDefinition beanDefinition = new BeanDefinition();
                 beanDefinition.setBeanClass(aClass);
-                beanDefinition.setScope(scope.value());
+
+                if(aClass.isAnnotationPresent(Scope.class)){
+                    Scope scope = aClass.getAnnotation(Scope.class);
+                    beanDefinition.setScope(scope.value());
+                }else {
+                    beanDefinition.setScope("singleton");
+                }
 
                 concurrentHashMap.put(beanName,beanDefinition);
+                beanDefinitionMap.put(beanName,beanDefinition);
             }
         }
+        System.out.println("初始化单例对象");
         initSingletonBeans(concurrentHashMap);
+        System.out.println("单例对象初始化完成");
         return concurrentHashMap;
     }
 
@@ -89,8 +101,9 @@ public class MyApplicationContext {
 
     private Object createBean(BeanDefinition definition) {
         Class beanClass = definition.getBeanClass();
+        Object bean = null;
         try {
-            Object bean = beanClass.getDeclaredConstructor().newInstance();
+            bean = beanClass.getDeclaredConstructor().newInstance();
             Field[] declaredFields = beanClass.getDeclaredFields();
             for (Field declaredField : declaredFields) {
                 if(declaredField.isAnnotationPresent(AutoWired.class)){
@@ -108,6 +121,6 @@ public class MyApplicationContext {
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         }
-        return beanClass;
+        return bean;
     }
 }

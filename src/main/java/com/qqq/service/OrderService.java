@@ -1,17 +1,25 @@
 package com.qqq.service;
 
-import com.qqqspring.AutoWired;
-import com.qqqspring.Component;
-import com.qqqspring.Scope;
+import com.qqqspring.*;
 
 @Component("orderService")
 @Scope("prototype")
-public class OrderService {
+public class OrderService implements InitializingBean , BeanNameAware {
 
     @AutoWired
     private UserService userService;
 
+    private String beanName;
+
     public void test(){
         System.out.println(userService);
+    }
+
+    public void afterPropertiesSet() {
+        System.out.println("Init Order");
+    }
+
+    public void setBeanName(String beanName) {
+        this.beanName = beanName;
     }
 }

@@ -5,6 +5,7 @@ import com.qqqspring.tools.ClassParseUtil;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,6 +13,7 @@ public class MyApplicationContext {
 
     private ConcurrentHashMap<String, BeanDefinition> beanDefinitionMap = null;
     private ConcurrentHashMap<String,Object> singletonObjects = null;
+    private List<BeanPostProcessor> beanPostProcessorList = null;
 
     public MyApplicationContext(Class configClass){
         ComponentScan annotation = (ComponentScan) configClass.getAnnotation(ComponentScan.class);
@@ -28,11 +30,11 @@ public class MyApplicationContext {
     public Object getBean(String beanName){
         BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
         if(beanDefinition.getScope().equals("prototype")){
-            return createBean(beanDefinition);
+            return createBean(beanName,beanDefinition);
         }else {
             Object bean = singletonObjects.get(beanName);
             if(bean == null){
-                bean = createBean(beanDefinition);
+                bean = createBean(beanName,beanDefinition);
                 singletonObjects.put(beanName,bean);
             }
             return bean;
@@ -52,12 +54,13 @@ public class MyApplicationContext {
         }
     }
 
-    private ConcurrentHashMap<String, BeanDefinition> findClassExisAnnotation(List<Class<?>> classes) throws Exception {
+    private ConcurrentHashMap<String, BeanDefinition> findClassExisAnnotation(List<Class<?>> classes) {
         if(classes.isEmpty()){
-            throw new Exception("没有找到类");
+            return null;
         }
         ConcurrentHashMap<String,BeanDefinition> concurrentHashMap = new ConcurrentHashMap<String, BeanDefinition>();
         beanDefinitionMap = new ConcurrentHashMap<String, BeanDefinition>();
+        beanPostProcessorList = new ArrayList<BeanPostProcessor>();
         //遍历扫描的所有类，并识别所有有Component注释的类
         for (Class<?> aClass : classes) {
             if(aClass.isAnnotationPresent(Component.class)){
@@ -72,6 +75,21 @@ public class MyApplicationContext {
                     beanDefinition.setScope(scope.value());
                 }else {
                     beanDefinition.setScope("singleton");
+                }
+
+                if(BeanPostProcessor.class.isAssignableFrom(aClass)){
+                    try {
+                        BeanPostProcessor bpp = (BeanPostProcessor)aClass.getDeclaredConstructor().newInstance();
+                        beanPostProcessorList.add(bpp);
+                    } catch (InstantiationException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 concurrentHashMap.put(beanName,beanDefinition);
@@ -92,14 +110,14 @@ public class MyApplicationContext {
         for (String beanName : concurrentHashMap.keySet()) {
             BeanDefinition definition = concurrentHashMap.get(beanName);
             if(definition.getScope().equals("singleton")){
-                Object bean = createBean(definition);
+                Object bean = createBean(beanName,definition);
                 singletonObjects.put(beanName,bean);
             }
         }
 
     }
 
-    private Object createBean(BeanDefinition definition) {
+    private Object createBean(String beanName,BeanDefinition definition) {
         Class beanClass = definition.getBeanClass();
         Object bean = null;
         try {
@@ -112,6 +130,25 @@ public class MyApplicationContext {
                     declaredField.set(bean,o);
                 }
             }
+
+            //Aware
+            if(bean instanceof  BeanNameAware){
+                ((BeanNameAware)bean).setBeanName(beanName);
+            }
+
+            for (BeanPostProcessor beanPostProcessor : beanPostProcessorList) {
+                beanPostProcessor.postProcessBeforeInitialization(bean,beanName);
+            }
+
+            //init bean
+            if(bean instanceof InitializingBean){
+                ((InitializingBean)bean).afterPropertiesSet();
+            }
+
+            for (BeanPostProcessor beanPostProcessor : beanPostProcessorList) {
+                beanPostProcessor.postProcessAfterInitialization(bean,beanName);
+            }
+
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {

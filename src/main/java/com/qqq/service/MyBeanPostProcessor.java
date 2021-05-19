@@ -7,12 +7,12 @@ import com.qqqspring.Component;
 public class MyBeanPostProcessor implements BeanPostProcessor {
 
     public Object postProcessBeforeInitialization(Object bean, String beanName) {
-        System.out.println("before");
+        System.out.println( beanName + "before");
         return null;
     }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) {
-        System.out.println("after");
+        System.out.println( beanName + "after");
         return null;
     }
 }

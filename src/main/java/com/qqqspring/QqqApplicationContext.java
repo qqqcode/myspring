@@ -1,7 +1,9 @@
 package com.qqqspring;
 
 
+import com.qqqspring.tools.Assert;
 import com.qqqspring.tools.ClassParseUtil;
+import com.qqqspring.tools.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -9,13 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MyApplicationContext {
+public class QqqApplicationContext {
 
     private ConcurrentHashMap<String, BeanDefinition> beanDefinitionMap = null;
     private ConcurrentHashMap<String, Object> singletonObjects = null;
     private List<BeanPostProcessor> beanPostProcessorList = null;
 
-    public MyApplicationContext(Class configClass) {
+    public QqqApplicationContext(Class configClass) {
         ComponentScan annotation = (ComponentScan) configClass.getAnnotation(ComponentScan.class);
         String scanPath = annotation.value();
         System.out.println("开启扫描：扫描路径为" + scanPath);
@@ -27,7 +29,18 @@ public class MyApplicationContext {
 
     }
 
+    public static void main(String[] args) {
+        try {
+            Class<?> aClass = Class.forName("com.qqq.service.UserService");
+            System.out.println(aClass.getName());
+
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
     public Object getBean(String beanName) {
+        Assert.hasText(beanName,beanName + "bean 名字不能为空");
         BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
         if (beanDefinition.getScope().equals("prototype")) {
             return createBean(beanName, beanDefinition);
@@ -63,35 +76,47 @@ public class MyApplicationContext {
         //遍历扫描的所有类，并识别所有有Component注释的类
         for (Class<?> aClass : classes) {
             if (aClass.isAnnotationPresent(Component.class)) {
+
                 Component component = aClass.getAnnotation(Component.class);
                 String beanName = component.value();
-
-                BeanDefinition beanDefinition = new BeanDefinition();
-                beanDefinition.setBeanClass(aClass);
-
-                if (aClass.isAnnotationPresent(Scope.class)) {
-                    Scope scope = aClass.getAnnotation(Scope.class);
-                    beanDefinition.setScope(scope.value());
-                } else {
-                    beanDefinition.setScope("singleton");
+                if (StringUtils.isEmpty(beanName)) {
+                    String[] split = aClass.getName().split(".");
+                    beanName = split[split.length - 1];
                 }
 
-                if (BeanPostProcessor.class.isAssignableFrom(aClass)) {
-                    try {
-                        BeanPostProcessor bpp = (BeanPostProcessor) aClass.getDeclaredConstructor().newInstance();
-                        beanPostProcessorList.add(bpp);
-                    } catch (InstantiationException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
-                    } catch (NoSuchMethodException e) {
-                        e.printStackTrace();
+                synchronized (this.beanDefinitionMap) {
+
+                    BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
+                    if (beanDefinition != null) {
+                        throw new RuntimeException(beanName + "beanName重复定义");
                     }
-                }
+                    beanDefinition = new BeanDefinition();
+                    beanDefinition.setBeanClass(aClass);
 
-                beanDefinitionMap.put(beanName, beanDefinition);
+                    if (aClass.isAnnotationPresent(Scope.class)) {
+                        Scope scope = aClass.getAnnotation(Scope.class);
+                        beanDefinition.setScope(scope.value());
+                    } else {
+                        beanDefinition.setScope("singleton");
+                    }
+
+                    if (BeanPostProcessor.class.isAssignableFrom(aClass)) {
+                        try {
+                            BeanPostProcessor bpp = (BeanPostProcessor) aClass.getDeclaredConstructor().newInstance();
+                            beanPostProcessorList.add(bpp);
+                        } catch (InstantiationException e) {
+                            e.printStackTrace();
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (InvocationTargetException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchMethodException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    beanDefinitionMap.put(beanName, beanDefinition);
+                }
             }
         }
         System.out.println("初始化单例对象");

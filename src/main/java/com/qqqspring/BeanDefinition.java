@@ -3,6 +3,7 @@ package com.qqqspring;
 public class BeanDefinition {
     private String scope;
     private Class beanClass;
+    private String lazyInit;
 
     public String getScope() {
         return scope;
@@ -18,5 +19,13 @@ public class BeanDefinition {
 
     public void setBeanClass(Class beanClass) {
         this.beanClass = beanClass;
+    }
+
+    public String getLazyInit() {
+        return lazyInit;
+    }
+
+    public void setLazyInit(String lazyInit) {
+        this.lazyInit = lazyInit;
     }
 }

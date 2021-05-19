@@ -20,8 +20,19 @@ import java.util.jar.JarFile;
  */
 public class ClassParseUtil {
 
+    public static Class<?> forName(String beanName, ClassLoader classLoader) {
+        Class<?> aClass = null;
+        try {
+            aClass = classLoader.loadClass(beanName);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return aClass;
+    }
+
     /**
      * 扫描路径下所有的class并返回
+     *
      * @param packageName
      * @return
      */

@@ -1,6 +1,8 @@
 package com.qqq.service;
 
 import com.qqqspring.*;
+import com.qqqspring.beans.annotation.AutoWired;
+import com.qqqspring.context.annotation.Scope;
 
 @Component("orderService")
 @Scope("prototype")

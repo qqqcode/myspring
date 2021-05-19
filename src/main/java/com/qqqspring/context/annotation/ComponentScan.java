@@ -1,4 +1,4 @@
-package com.qqqspring;
+package com.qqqspring.context.annotation;
 
 
 import java.lang.annotation.ElementType;

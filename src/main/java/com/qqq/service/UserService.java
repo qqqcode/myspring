@@ -1,7 +1,7 @@
 package com.qqq.service;
 
 import com.qqqspring.Component;
-import com.qqqspring.Scope;
+import com.qqqspring.context.annotation.Scope;
 
 @Component("userService")
 @Scope

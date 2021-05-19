@@ -1,6 +1,9 @@
 package com.qqqspring;
 
 
+import com.qqqspring.beans.annotation.AutoWired;
+import com.qqqspring.context.annotation.ComponentScan;
+import com.qqqspring.context.annotation.Scope;
 import com.qqqspring.tools.Assert;
 import com.qqqspring.tools.ClassParseUtil;
 import com.qqqspring.tools.StringUtils;
@@ -11,13 +14,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class QqqApplicationContext {
+public class ApplicationContext {
 
     private ConcurrentHashMap<String, BeanDefinition> beanDefinitionMap = null;
     private ConcurrentHashMap<String, Object> singletonObjects = null;
     private List<BeanPostProcessor> beanPostProcessorList = null;
 
-    public QqqApplicationContext(Class configClass) {
+    public ApplicationContext(Class configClass) {
         ComponentScan annotation = (ComponentScan) configClass.getAnnotation(ComponentScan.class);
         String scanPath = annotation.value();
         System.out.println("开启扫描：扫描路径为" + scanPath);
@@ -40,7 +43,7 @@ public class QqqApplicationContext {
     }
 
     public Object getBean(String beanName) {
-        Assert.hasText(beanName,beanName + "bean 名字不能为空");
+        Assert.hasText(beanName, beanName + "bean 名字不能为空");
         BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
         if (beanDefinition.getScope().equals("prototype")) {
             return createBean(beanName, beanDefinition);
@@ -182,5 +185,19 @@ public class QqqApplicationContext {
             e.printStackTrace();
         }
         return bean;
+    }
+
+    public Object getSingleton(String beanName) {
+        return getSingleton(beanName, true);
+    }
+
+    protected Object getSingleton(String beanName, boolean allowEarlyRefrence) {
+        Object o = singletonObjects.get(beanName);
+        if (o == null) {
+            synchronized (this.singletonObjects) {
+
+            }
+        }
+        return (o == null ? null : o);
     }
 }

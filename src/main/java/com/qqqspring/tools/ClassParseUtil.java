@@ -30,6 +30,27 @@ public class ClassParseUtil {
         return aClass;
     }
 
+    public static ClassLoader getDefaultClassLoader(){
+        ClassLoader cl = null;
+
+        try {
+            cl = Thread.currentThread().getContextClassLoader();
+        } catch (Throwable var3) {
+        }
+
+        if (cl == null) {
+            cl = ClassParseUtil.class.getClassLoader();
+            if (cl == null) {
+                try {
+                    cl = ClassLoader.getSystemClassLoader();
+                } catch (Throwable var2) {
+                }
+            }
+        }
+
+        return cl;
+    }
+
     /**
      * 扫描路径下所有的class并返回
      *

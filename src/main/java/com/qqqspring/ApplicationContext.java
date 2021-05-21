@@ -2,6 +2,7 @@ package com.qqqspring;
 
 
 import com.qqqspring.beans.annotation.AutoWired;
+import com.qqqspring.beans.factory.config.BeanPostProcessor;
 import com.qqqspring.context.annotation.ComponentScan;
 import com.qqqspring.context.annotation.Scope;
 import com.qqqspring.tools.Assert;

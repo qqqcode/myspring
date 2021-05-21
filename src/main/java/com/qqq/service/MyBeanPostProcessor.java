@@ -1,6 +1,6 @@
 package com.qqq.service;
 
-import com.qqqspring.BeanPostProcessor;
+import com.qqqspring.beans.factory.config.BeanPostProcessor;
 import com.qqqspring.Component;
 
 @Component

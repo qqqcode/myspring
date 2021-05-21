@@ -7,11 +7,15 @@ package com.qqqspring.beans.factory.config;
 public interface BeanDefinition {
 
     String getScope();
-    
+
     void setScope(String scope);
 
     Class getBeanClass();
 
-    void setBeanClass(Class beanClass);
+    void setBeanClass(Class<?> beanClass);
+
+    void setLazyInit(boolean var1);
+
+    boolean isLazyInit();
 
 }

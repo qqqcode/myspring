@@ -20,7 +20,7 @@ public abstract class AbstractBeanDefinition implements BeanDefinition, Cloneabl
         this.scope = "";
         if (original instanceof AbstractBeanDefinition) {
             AbstractBeanDefinition originalAbd = (AbstractBeanDefinition)original;
-            Boolean lazyInit = originalAbd.getLazyInit();
+            Boolean lazyInit = originalAbd.isLazyInit();
             if (lazyInit != null) {
                 this.setLazyInit(lazyInit);
             }
@@ -39,18 +39,20 @@ public abstract class AbstractBeanDefinition implements BeanDefinition, Cloneabl
         this.scope = scope;
     }
 
-    public Boolean getLazyInit() {
-        return lazyInit;
-    }
-
-    public void setLazyInit(Boolean lazyInit) {
+    public void setLazyInit(boolean lazyInit) {
         this.lazyInit = lazyInit;
     }
 
-    public void setBeanClassName(String beanClassName) {
-        this.beanClass = beanClassName;
+    public boolean isLazyInit() {
+        return this.lazyInit != null && this.lazyInit;
     }
 
+    @Override
+    public void setBeanClassName(String var1) {
+        this.beanClass = var1;
+    }
+
+    @Override
     public String getBeanClassName() {
         Object beanClassObject = this.beanClass;
         return beanClassObject instanceof Class ? ((Class)beanClassObject).getName() : (String)beanClassObject;
@@ -75,9 +77,6 @@ public abstract class AbstractBeanDefinition implements BeanDefinition, Cloneabl
         return this.beanClass instanceof Class;
     }
 
-    public Object clone() {
-        return this.cloneBeanDefinition();
-    }
 
     public abstract AbstractBeanDefinition cloneBeanDefinition();
 
@@ -91,8 +90,4 @@ public abstract class AbstractBeanDefinition implements BeanDefinition, Cloneabl
                 Objects.equals(lazyInit, that.lazyInit);
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(scope, beanClass, lazyInit);
-    }
 }

@@ -14,6 +14,10 @@ public interface BeanDefinition {
 
     void setBeanClass(Class<?> beanClass);
 
+    void setBeanClassName(String var1);
+
+    String getBeanClassName();
+
     void setLazyInit(boolean var1);
 
     boolean isLazyInit();

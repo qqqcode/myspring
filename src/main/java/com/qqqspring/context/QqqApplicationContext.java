@@ -1,6 +1,7 @@
 package com.qqqspring.context;
 
 import com.qqqspring.beans.factory.BeanFactory;
+import com.qqqspring.beans.factory.support.AbstractBeanFactory;
 
 /**
  * @author Johnson
@@ -15,5 +16,7 @@ public interface QqqApplicationContext extends BeanFactory {
     String getDisplayName();
 
     long getStartupDate();
+
+    AbstractBeanFactory getBeanFactory();
 
 }

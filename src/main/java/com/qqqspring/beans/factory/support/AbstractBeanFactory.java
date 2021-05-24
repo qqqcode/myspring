@@ -12,7 +12,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author Johnson
  * 2021/5/21
  */
-public abstract class AbstractBeanFactory extends BeanDefinitionRegistry implements BeanFactory {
+public abstract class AbstractBeanFactory implements BeanFactory, BeanDefinitionRegistry {
+
+    private final Map<String, Object> singletonObjects = new ConcurrentHashMap(256);
 
     private final List<BeanPostProcessor> beanPostProcessors = new CopyOnWriteArrayList();
 
@@ -45,9 +47,7 @@ public abstract class AbstractBeanFactory extends BeanDefinitionRegistry impleme
 
     public boolean containsBean(String name) {
         String canonicalName = name;
-
         String resolvedName;
-
         return false;
     }
 

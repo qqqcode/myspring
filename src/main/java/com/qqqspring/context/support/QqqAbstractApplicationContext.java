@@ -9,6 +9,9 @@ import com.qqqspring.context.QqqApplicationContext;
  */
 public abstract class QqqAbstractApplicationContext implements QqqApplicationContext {
 
+    private final Object startupShutdownMonitor = new Object();
+
+
     @Override
     public Object getBean(String var1) {
         return null;
@@ -67,6 +70,18 @@ public abstract class QqqAbstractApplicationContext implements QqqApplicationCon
     public abstract AbstractBeanFactory getBeanFactory();
 
     public void refresh() {
+        synchronized (this.startupShutdownMonitor) {
+            AbstractBeanFactory abstractBeanFactory = getBeanFactory();
+            prepareBeanFactory(abstractBeanFactory);
+        }
+    }
+
+    protected void prepareBeanFactory(AbstractBeanFactory beanFactory) {
 
     }
+
+    protected void invokeBeanFactoryPostProcessors(AbstractBeanFactory beanFactory){
+        
+    }
+
 }

@@ -1,7 +1,6 @@
 package com.qqqspring.context.annotation;
 
 import com.qqqspring.beans.factory.support.AbstractBeanFactory;
-import com.qqqspring.beans.factory.support.BeanDefinitionRegistry;
 import com.qqqspring.beans.factory.support.DefaultBeanFactory;
 import com.qqqspring.context.support.QqqAbstractApplicationContext;
 
@@ -9,27 +8,12 @@ import com.qqqspring.context.support.QqqAbstractApplicationContext;
  * @author Johnson
  * 2021/5/24
  */
-public class QqqAnnotationConfigApplicationContext extends QqqAbstractApplicationContext implements BeanDefinitionRegistry {
+public class QqqAnnotationConfigApplicationContext extends QqqAbstractApplicationContext{
 
     private final DefaultBeanFactory beanFactory;
 
     public QqqAnnotationConfigApplicationContext() {
         this.beanFactory = new DefaultBeanFactory();
-    }
-
-    @Override
-    public void registerAlias(String var1, String var2) {
-
-    }
-
-    @Override
-    public void removeAlias(String var1) {
-
-    }
-
-    @Override
-    public boolean isAlias(String var1) {
-        return false;
     }
 
     @Override

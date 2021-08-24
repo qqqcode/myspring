@@ -6,5 +6,5 @@ package com.qqqspring.beans.factory.support;
  * 2021/5/21
  */
 public interface BeanDefinitionRegistry extends AliasRegistry {
-
+    void registryBeanDefinition();
 }

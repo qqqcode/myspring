@@ -45,4 +45,9 @@ public class DefaultBeanFactory extends AbstractBeanFactory {
     public boolean isAlias(String var1) {
         return false;
     }
+
+    @Override
+    public void registryBeanDefinition() {
+
+    }
 }

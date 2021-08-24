@@ -1,5 +1,6 @@
 package com.qqqspring.context.support;
 
+import com.qqqspring.beans.factory.BeanFactory;
 import com.qqqspring.beans.factory.support.AbstractBeanFactory;
 import com.qqqspring.context.QqqApplicationContext;
 
@@ -72,16 +73,13 @@ public abstract class QqqAbstractApplicationContext implements QqqApplicationCon
     public void refresh() {
         synchronized (this.startupShutdownMonitor) {
             AbstractBeanFactory abstractBeanFactory = getBeanFactory();
-            prepareBeanFactory(abstractBeanFactory);
+
         }
     }
 
-    protected void prepareBeanFactory(AbstractBeanFactory beanFactory) {
-
+    protected int initBeanFactory(BeanFactory abstractBeanFactory) {
+        return 1;
     }
 
-    protected void invokeBeanFactoryPostProcessors(AbstractBeanFactory beanFactory){
-        
-    }
 
 }

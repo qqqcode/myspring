@@ -17,7 +17,7 @@ public class CustomerMain {
         Connection connection = activeMQConnectionFactory.createConnection();
         connection.start();
         Session session = connection.createSession(Boolean.FALSE, Session.AUTO_ACKNOWLEDGE);
-        Queue qqq = session.createQueue("qqq");
+        Queue qqq = session.createQueue("qqqQueue");
         MessageConsumer consumer = session.createConsumer(qqq);
 
         while (true){

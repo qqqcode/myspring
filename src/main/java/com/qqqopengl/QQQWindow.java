@@ -25,6 +25,22 @@ public class QQQWindow {
 
     private static QQQWindow window;
 
+    private static Scene currentScene;
+
+    public static void changeScene(int newScene) {
+        switch (newScene) {
+            case 0:
+                currentScene = new LevelEditorScene();
+                break;
+            case 1:
+                currentScene = new LevelScene();
+                break;
+            default:
+                assert false : "Unknown scene '" + newScene + "'";
+                break;
+        }
+    }
+
     public static QQQWindow get() {
         if (QQQWindow.window == null) {
             QQQWindow.window = new QQQWindow();

@@ -95,14 +95,14 @@ public class GLFWTest {
                     (vidmode.width() - pWidth.get(0)) / 2,
                     (vidmode.height() - pHeight.get(0)) / 2
             );
-        } // the stack frame is popped automatically
+        }
 
-        // Make the OpenGL context current
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN );
+
         glfwMakeContextCurrent(window);
-        // Enable v-sync
+
         glfwSwapInterval(1);
 
-        // Make the window visible
         glfwShowWindow(window);
     }
 

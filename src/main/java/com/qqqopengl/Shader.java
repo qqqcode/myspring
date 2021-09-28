@@ -47,6 +47,7 @@ public class Shader {
 
     public static Shader loadShader(int type, String path) {
         StringBuilder builder = new StringBuilder();
+        path = System.getProperty("user.dir") + "/src/main"+ path;
 
         try (InputStream in = new FileInputStream(path);
              BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {

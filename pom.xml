@@ -12,6 +12,7 @@
     <properties>
         <lwjgl.version>3.2.3</lwjgl.version>
         <lwjgl.natives>natives-windows</lwjgl.natives>
+        <pngdecoder.version>1.0</pngdecoder.version>
     </properties>
 
     <dependencyManagement>

@@ -1,5 +1,7 @@
 package com.qqqopengl;
 
+import com.qqqopengl.graphic.QqqWindow;
+
 public interface QqqIGameLogic {
 
     void init() throws Exception;

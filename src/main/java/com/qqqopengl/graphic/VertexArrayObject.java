@@ -1,4 +1,4 @@
-package com.qqqopengl;
+package com.qqqopengl.graphic;
 
 import static org.lwjgl.opengl.GL30.*;
 

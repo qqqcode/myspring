@@ -1,4 +1,4 @@
-package com.qqqopengl;
+package com.qqqopengl.util;
 
 public class TimeUtil {
     public static float timeStarted = System.nanoTime();

@@ -1,5 +1,6 @@
 package com.qqqopengl;
 
+import com.qqqopengl.util.TimeUtil;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -24,22 +25,6 @@ public class GLFWTest {
     private float r= 1,g =1 ,b = 1,a = 1;
 
     private boolean faceback = false;
-
-    private static Scene currentScene;
-
-    public static void changeScene(int newScene) {
-        switch (newScene) {
-            case 0:
-                currentScene = new LevelEditorScene();
-                break;
-            case 1:
-                currentScene = new LevelScene();
-                break;
-            default:
-                assert false : "Unknown scene '" + newScene + "'";
-                break;
-        }
-    }
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");

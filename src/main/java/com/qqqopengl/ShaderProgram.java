@@ -1,5 +1,6 @@
 package com.qqqopengl;
 
+import com.qqqopengl.graphic.Shader;
 import com.qqqopengl.math.*;
 import org.lwjgl.system.MemoryStack;
 

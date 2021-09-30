@@ -1,4 +1,4 @@
-package com.qqqopengl;
+package com.qqqopengl.graphic;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;

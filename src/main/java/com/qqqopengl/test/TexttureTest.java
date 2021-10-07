@@ -1,17 +1,12 @@
 package com.qqqopengl.test;
 
-import com.qqqopengl.ShaderProgram;
-import com.qqqopengl.graphic.QqqWindow;
-import com.qqqopengl.graphic.Shader;
-import com.qqqopengl.graphic.VertexArrayObject;
-import com.qqqopengl.graphic.VertexBufferObject;
+import com.qqqopengl.graphic.ShaderProgram;
+import com.qqqopengl.graphic.*;
 import com.qqqopengl.util.Constant;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
@@ -27,12 +22,9 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
-import static org.lwjgl.stb.STBImage.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class TexttureTest {
-    public void init () {
+    public void init() {
 
         GLFWErrorCallback errorCallback = GLFWErrorCallback.createPrint(System.err);
         glfwSetErrorCallback(errorCallback);
@@ -41,7 +33,7 @@ public class TexttureTest {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
-        QqqWindow qqq = new QqqWindow("qqq", 800, 600, true);
+        QqqWindow qqq = new QqqWindow("qqq", 1600, 1200, true);
 
         Shader vertexShader = Shader.loadShader(GL_VERTEX_SHADER, "/resources/textture1.vert");
         Shader fragmentShader = Shader.loadShader(GL_FRAGMENT_SHADER, "/resources/textture1.frag");
@@ -77,47 +69,22 @@ public class TexttureTest {
             ebo.uploadData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
         }
 
-        int floatSize = 4;
+        int floatSize = Float.BYTES;
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * floatSize, 0);
         glEnableVertexAttribArray(0);
 
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * floatSize, 3*floatSize);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * floatSize, 3 * floatSize);
         glEnableVertexAttribArray(1);
 
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * floatSize, 6*floatSize);
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * floatSize, 6 * floatSize);
         glEnableVertexAttribArray(2);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-        int texture = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D,texture);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        ByteBuffer image;
-        int width, height;
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer w = stack.mallocInt(1);
-            IntBuffer h = stack.mallocInt(1);
-            IntBuffer comp = stack.mallocInt(1);
-
-            stbi_set_flip_vertically_on_load(true);
-            image = stbi_load(Constant.resources + "container.jpg", w, h, comp, 4);
-            if (image == null) {
-                throw new RuntimeException("Failed to load a texture file!" + System.lineSeparator() + stbi_failure_reason());
-            }
-
-            width = w.get();
-            height = h.get();
-        }
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width,height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+        Texture texture = Texture.loadTexture(Constant.resources + "container.jpg");
+        Texture texture1 = Texture.loadTexture(Constant.resources + "img_1.png");
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -127,10 +94,32 @@ public class TexttureTest {
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glBindTexture(GL_TEXTURE_2D,texture);
-
             shaderProgram.use();
+            //texture
+            glActiveTexture(GL_TEXTURE0);
+            texture.bind();
+            int ourTexture1 = shaderProgram.getUniformLocation("ourTexture1");
+            shaderProgram.setUniform(ourTexture1, 0);
 
+            glActiveTexture(GL_TEXTURE1);
+            texture1.bind();
+            int ourTexture2 = shaderProgram.getUniformLocation("ourTexture2");
+            shaderProgram.setUniform(ourTexture2, 1);
+
+            //transform
+            Matrix4f model = new Matrix4f();
+            model.rotate(-45.0f, 1.0f, 0f, 0f);
+            Matrix4f view = new Matrix4f();
+            view.translate(0f, 0f, -3.0f);
+            Matrix4f projection = new Matrix4f();
+            projection.perspective(45.0f, qqq.getWidth() / qqq.getHeight(), 0.1f, 100.0f);
+
+            shaderProgram.setUniform("model", model);
+            shaderProgram.setUniform("view", view);
+            shaderProgram.setUniform("projection", projection);
+
+
+            //draw use vao
             glBindVertexArray(vao.getID());
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
             //glDrawArrays(GL_TRIANGLES, 0, 3);

@@ -109,4 +109,12 @@ public class QqqWindow {
     public boolean isVSyncEnabled() {
         return this.vsync;
     }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
 }

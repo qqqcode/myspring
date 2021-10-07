@@ -1,7 +1,7 @@
 package com.qqqopengl.test;
 
-import com.qqqopengl.*;
 import com.qqqopengl.graphic.Shader;
+import com.qqqopengl.graphic.ShaderProgram;
 import com.qqqopengl.graphic.VertexArrayObject;
 import com.qqqopengl.graphic.VertexBufferObject;
 import org.lwjgl.glfw.GLFWErrorCallback;

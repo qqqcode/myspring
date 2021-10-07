@@ -1,10 +1,12 @@
-package com.qqqopengl;
+package com.qqqopengl.graphic;
 
-import com.qqqopengl.graphic.Shader;
-import com.qqqopengl.math.*;
+import com.qqqopengl.math.Matrix2f;
+import org.joml.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.GL_TRUE;
 import static org.lwjgl.opengl.GL20.*;
@@ -16,11 +18,14 @@ public class ShaderProgram {
      */
     private final int id;
 
+    private final Map<String, Integer> uniforms;
+
     /**
      * Creates a shader program.
      */
     public ShaderProgram() {
         id = glCreateProgram();
+        uniforms = new HashMap<>();
     }
 
     /**
@@ -102,7 +107,9 @@ public class ShaderProgram {
      * @return Location of the uniform
      */
     public int getUniformLocation(CharSequence name) {
-        return glGetUniformLocation(id, name);
+        int uniformLocation = glGetUniformLocation(id, name);
+        uniforms.put(name.toString(),uniformLocation);
+        return uniformLocation;
     }
 
     /**
@@ -124,7 +131,7 @@ public class ShaderProgram {
     public void setUniform(int location, Vector2f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(2);
-            value.toBuffer(buffer);
+            value.get(buffer);
             glUniform2fv(location, buffer);
         }
     }
@@ -138,7 +145,7 @@ public class ShaderProgram {
     public void setUniform(int location, Vector3f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(3);
-            value.toBuffer(buffer);
+            value.get(buffer);
             glUniform3fv(location, buffer);
         }
     }
@@ -152,7 +159,7 @@ public class ShaderProgram {
     public void setUniform(int location, Vector4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(4);
-            value.toBuffer(buffer);
+            value.get(buffer);
             glUniform4fv(location, buffer);
         }
     }
@@ -180,7 +187,7 @@ public class ShaderProgram {
     public void setUniform(int location, Matrix3f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(3 * 3);
-            value.toBuffer(buffer);
+            value.get(buffer);
             glUniformMatrix3fv(location, false, buffer);
         }
     }
@@ -194,9 +201,14 @@ public class ShaderProgram {
     public void setUniform(int location, Matrix4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(4 * 4);
-            value.toBuffer(buffer);
+            value.get(buffer);
             glUniformMatrix4fv(location, false, buffer);
         }
+    }
+
+    public void setUniform(CharSequence name, Matrix4f value) {
+        int uniformLocation = getUniformLocation(name);
+        setUniform(uniformLocation,value);
     }
 
     /**

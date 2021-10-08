@@ -28,6 +28,8 @@ public class LightTest {
 
     static boolean firstMouse = true;
 
+    static Vector3f lightPos =  new Vector3f(1.2f, 1.0f, 2.0f);
+
     public static void fun() {
 
         GLFWErrorCallback errorCallback = GLFWErrorCallback.createPrint(System.err);
@@ -44,9 +46,9 @@ public class LightTest {
         renderer.glEnbale(GL_DEPTH_TEST);
 
         renderer.init("/resources/light.vert","/resources/light.frag");
-        renderer.specifyVertexAttributes("postion",3,8,0);
-        renderer.specifyVertexAttributes("color",3,8,3);
-        renderer.specifyVertexAttributes("texcoord",2,8,6);
+        renderer.specifyVertexAttributes("position",3,6,0);
+        renderer.specifyVertexAttributes("normal",3,6,3);
+        //renderer.specifyVertexAttributes("texcoord",2,8,6);
 
         renderer.begin();
         renderer.flush();
@@ -109,8 +111,6 @@ public class LightTest {
             keyPress(qqq,camera);
             mousePress(camera);
 
-            float sin = (float) Math.sin(glfwGetTime()) * 10.0f;
-            float cos = (float) Math.cos(glfwGetTime()) * 10.0f;
             Matrix4f viewMatrix = camera.getViewMatrix();
             renderer.setUniform("model", new Matrix4f().rotate(20.0f, 0.0f, 1.0f, 0f));
             renderer.setUniform("view", viewMatrix);
@@ -118,6 +118,7 @@ public class LightTest {
 
             renderer.setUniform("objectColor", new Vector3f(1.0f, 0.5f, 0.31f));
             renderer.setUniform("lightColor", new Vector3f(1.0f, 1.0f, 1.0f));
+            renderer.setUniform("lightPosLoc", lightPos);
 
             renderer.render(ver, 36);
 

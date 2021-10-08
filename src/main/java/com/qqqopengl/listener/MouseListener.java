@@ -1,4 +1,4 @@
-package com.qqqopengl;
+package com.qqqopengl.listener;
 
 import static org.lwjgl.glfw.GLFW.*;
 

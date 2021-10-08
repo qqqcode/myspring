@@ -1,7 +1,7 @@
 package com.qqqopengl.graphic;
 
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
+import com.qqqopengl.listener.KeyListener;
+import com.qqqopengl.listener.MouseListener;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
@@ -12,7 +12,7 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 public class QqqWindow {
 
     private final long id;
-    private final GLFWKeyCallback keyCallback;
+    //private final GLFWKeyCallback keyCallback;
 
     int width;
     int height;
@@ -67,20 +67,27 @@ public class QqqWindow {
             glfwSwapInterval(1);
         }
 
-        keyCallback = new GLFWKeyCallback() {
-            @Override
-            public void invoke(long window, int key, int scancode, int action, int mods) {
-                if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-                    glfwSetWindowShouldClose(window, true);
-                }
-            }
-        };
+//        keyCallback = new GLFWKeyCallback() {
+//            @Override
+//            public void invoke(long window, int key, int scancode, int action, int mods) {
+//                if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+//                    glfwSetWindowShouldClose(window, true);
+//                }
+//            }
+//        };
 
-        glfwSetKeyCallback(id, keyCallback);
+        glfwSetKeyCallback(id, KeyListener::keyCallback);
+        glfwSetCursorPosCallback(id, MouseListener::moustPosCallback);
+        glfwSetMouseButtonCallback(id, MouseListener::mouseButtonCallback);
+        glfwSetScrollCallback(id, MouseListener::mouseScrollCallback);
     }
 
     public boolean isClosing() {
         return glfwWindowShouldClose(id);
+    }
+
+    public void close() {
+        glfwSetWindowShouldClose(id, true);
     }
 
     public void setTitle(CharSequence title) {
@@ -94,7 +101,7 @@ public class QqqWindow {
 
     public void destroy() {
         glfwDestroyWindow(id);
-        keyCallback.free();
+        //keyCallback.free();
     }
 
     public void setVSync(boolean vsync) {

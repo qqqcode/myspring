@@ -1,5 +1,7 @@
 package com.qqqopengl;
 
+import com.qqqopengl.listener.KeyListener;
+import com.qqqopengl.listener.MouseListener;
 import com.qqqopengl.util.TimeUtil;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;

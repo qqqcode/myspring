@@ -1,6 +1,9 @@
 package com.qqqopengl.test;
 
-import com.qqqopengl.graphic.*;
+import com.qqqopengl.graphic.Camera;
+import com.qqqopengl.graphic.QqqWindow;
+import com.qqqopengl.graphic.Renderer;
+import com.qqqopengl.graphic.Texture;
 import com.qqqopengl.listener.KeyListener;
 import com.qqqopengl.listener.MouseListener;
 import com.qqqopengl.util.Constant;
@@ -9,14 +12,12 @@ import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE1;
-import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 
-public class RendererTest {
-
+public class LightTest {
     static int SCR_WIDTH = 800;
     static int SCR_HEIGHT = 600;
     static float lastX = SCR_WIDTH / 2.0f;
@@ -46,9 +47,6 @@ public class RendererTest {
         renderer.specifyVertexAttributes("postion",3,8,0);
         renderer.specifyVertexAttributes("color",3,8,3);
         renderer.specifyVertexAttributes("texcoord",2,8,6);
-
-        Texture texture = Texture.loadTexture(Constant.resources + "container.jpg");
-        Texture texture1 = Texture.loadTexture(Constant.resources + "img_1.png");
 
         renderer.begin();
         renderer.flush();
@@ -97,18 +95,7 @@ public class RendererTest {
                 -0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                 -0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f
         };
-
-
-        renderer.useTexture(GL_TEXTURE0, texture, "ourTexture", 0);
-        renderer.useTexture(GL_TEXTURE1, texture1, "ourTexture2", 1);
-
-//        renderer.setUniform("model",new Matrix4f().rotate(-55.0f, 1.0f, 0f, 0f));
-//        renderer.setUniform("view",new Matrix4f().translate(0f, 0f, -3.0f));
-//        renderer.setUniform("projection",new Matrix4f().perspective(45.0f, qqq.getWidth() / qqq.getHeight(), 0.1f, 100.0f));
-
-
         while (!qqq.isClosing()) {
-
 
             float currentFrame = (float) glfwGetTime();
             deltaTime = currentFrame - lastFrame;

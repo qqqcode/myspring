@@ -1,21 +1,20 @@
 package com.qqqopengl.graphic;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.NativeType;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11C.GL_BLEND;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Renderer {
 
@@ -34,11 +33,32 @@ public class Renderer {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
+    public void init(String vertexShaderName, String fragmentShaderName) {
+        setupSahderProgram();
+        initShaderProgram(vertexShaderName, fragmentShaderName);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    /**
+     * @param vertexShaderName   "/resources/textture1.vert"
+     * @param fragmentShaderName "/resources/textture1.frag"
+     */
+    public void initShaderProgram(String vertexShaderName, String fragmentShaderName) {
+        Shader vertexShader = Shader.loadShader(GL_VERTEX_SHADER, vertexShaderName);
+        Shader fragmentShader = Shader.loadShader(GL_FRAGMENT_SHADER, fragmentShaderName);
+        program = new ShaderProgram();
+        program.attachShader(vertexShader);
+        program.attachShader(fragmentShader);
+        program.link();
+        program.use();
+    }
+
     public void glEnbale(int target) {
         glEnable(target);
     }
 
-    public void uploadVBO(float[] vertice,int count) {
+    public void uploadVBO(float[] vertice, int count) {
         vertices.put(vertice);
         vertices.flip();
 
@@ -47,28 +67,25 @@ public class Renderer {
         numVertices = count;
     }
 
-    public void draw(int mode,int first,int count){
+    public void draw(int mode, int first, int count) {
         vao.bind();
         glEnableVertexAttribArray(0);
         glDrawArrays(mode, first, count);
         glBindVertexArray(0);
     }
 
-    public void render(float[] vertice,int count) {
-
-        uploadVBO(vertice,count);
+    public void render(float[] vertice, int count) {
+        uploadVBO(vertice, count);
         program.use();
-        draw(GL_TRIANGLES,0,numVertices);
+        draw(GL_TRIANGLES, 0, numVertices);
     }
 
-    public void cleanup () {
+    public void cleanup() {
         glDisableVertexAttribArray(0);
 
-        // Delete the VBO
         glBindBuffer(GL_ARRAY_BUFFER, 0);
-        vbo.delete();;
+        vbo.delete();
 
-        // Delete the VAO
         glBindVertexArray(0);
         vao.delete();
     }
@@ -101,18 +118,14 @@ public class Renderer {
                 vao.bind();
             } else {
                 vbo.bind(GL_ARRAY_BUFFER);
-                specifyVertexAttributes();
             }
             program.use();
 
-            /* Upload the new vertex data */
             vbo.bind(GL_ARRAY_BUFFER);
             vbo.uploadSubData(GL_ARRAY_BUFFER, 0, vertices);
 
-            /* Draw batch */
             glDrawArrays(GL_TRIANGLES, 0, numVertices);
 
-            /* Clear vertex data for next batch */
             vertices.clear();
             numVertices = 0;
         }
@@ -128,10 +141,10 @@ public class Renderer {
         program.delete();
     }
 
-    public void useTexture(int activePos,Texture texture,CharSequence uniformLocation,int uniform) {
+    public void useTexture(int activePos, Texture texture, CharSequence uniformLocation, int uniform) {
         glActiveTexture(activePos);
         texture.bind();
-        setUniform(uniformLocation,uniform);
+        setUniform(uniformLocation, uniform);
     }
 
     public void setUniform(CharSequence name, int value) {
@@ -139,9 +152,14 @@ public class Renderer {
         program.setUniform(ourTexture, value);
     }
 
+    public void setUniform(CharSequence name, Vector3f value) {
+        int ourTexture = program.getUniformLocation(name);
+        program.setUniform(ourTexture, value);
+    }
+
     public void setUniform(CharSequence name, Matrix4f value) {
         int uniformLocation = program.getUniformLocation(name);
-        program.setUniform(uniformLocation,value);
+        program.setUniform(uniformLocation, value);
     }
 
     private void setupSahderProgram() {
@@ -158,46 +176,17 @@ public class Renderer {
         numVertices = 0;
         drawing = false;
 
-        Shader vertexShader = Shader.loadShader(GL_VERTEX_SHADER, "/resources/textture1.vert");
-        Shader fragmentShader = Shader.loadShader(GL_FRAGMENT_SHADER, "/resources/textture1.frag");
-
-        program = new ShaderProgram();
-        program.attachShader(vertexShader);
-        program.attachShader(fragmentShader);
-        program.link();
-        program.use();
-
-        vertexShader.delete();
-        fragmentShader.delete();
-
-        long window = GLFW.glfwGetCurrentContext();
-        int width, height;
-
-        try (MemoryStack stack = MemoryStack.stackPush()) {
-            IntBuffer widthBuffer = stack.mallocInt(1);
-            IntBuffer heightBuffer = stack.mallocInt(1);
-
-            GLFW.glfwGetFramebufferSize(window, widthBuffer, heightBuffer);
-            width = widthBuffer.get();
-            height = heightBuffer.get();
-        }
-
-        specifyVertexAttributes();
-
-//        glActiveTexture(GL_TEXTURE0);
-//        int ourTexture = program.getUniformLocation("ourTexture");
-//        program.setUniform(ourTexture, 0);
-
-
-        Matrix4f model = new Matrix4f();
-        program.setUniform("model", model);
-
-        Matrix4f view = new Matrix4f();
-        program.setUniform("view", view);
-
-        Matrix4f projection = new Matrix4f();
-        program.setUniform("projection", projection);
-
+//        long window = GLFW.glfwGetCurrentContext();
+//        int width, height;
+//
+//        try (MemoryStack stack = MemoryStack.stackPush()) {
+//            IntBuffer widthBuffer = stack.mallocInt(1);
+//            IntBuffer heightBuffer = stack.mallocInt(1);
+//
+//            GLFW.glfwGetFramebufferSize(window, widthBuffer, heightBuffer);
+//            width = widthBuffer.get();
+//            height = heightBuffer.get();
+//        }
     }
 
     private void specifyVertexAttributes() {
@@ -212,6 +201,12 @@ public class Renderer {
         int texcoord = program.getAttributeLocation("texcoord");
         program.enableVertexAttribute(texcoord);
         program.pointVertexAttribute(texcoord, 2, 8 * Float.BYTES, 6 * Float.BYTES);
+    }
+
+    public void specifyVertexAttributes(CharSequence name, int size, int stride, int offset) {
+        int v = program.getAttributeLocation(name);
+        program.enableVertexAttribute(v);
+        program.pointVertexAttribute(v, size, stride * Float.BYTES, offset * Float.BYTES);
     }
 
 }

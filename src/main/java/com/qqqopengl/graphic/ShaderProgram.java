@@ -122,6 +122,10 @@ public class ShaderProgram {
         glUniform1i(location, value);
     }
 
+    public void setUniform(int location, float value) {
+        glUniform1f(location, value);
+    }
+
     /**
      * Sets the uniform variable for specified location.
      *

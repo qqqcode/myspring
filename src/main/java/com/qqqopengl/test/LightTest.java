@@ -1,9 +1,6 @@
 package com.qqqopengl.test;
 
-import com.qqqopengl.graphic.Camera;
-import com.qqqopengl.graphic.QqqWindow;
-import com.qqqopengl.graphic.Renderer;
-import com.qqqopengl.graphic.Texture;
+import com.qqqopengl.graphic.*;
 import com.qqqopengl.listener.KeyListener;
 import com.qqqopengl.listener.MouseListener;
 import com.qqqopengl.util.Constant;
@@ -28,7 +25,7 @@ public class LightTest {
 
     static boolean firstMouse = true;
 
-    static Vector3f lightPos =  new Vector3f(1.2f, 1.0f, 2.0f);
+    static Vector3f lightPos = new Vector3f(2.2f, 1.0f, 2.0f);
 
     public static void fun() {
 
@@ -40,62 +37,70 @@ public class LightTest {
         }
 
         QqqWindow qqq = new QqqWindow("qqqlight", SCR_WIDTH, SCR_HEIGHT, true);
-        Camera camera = new Camera(0f,0.0f,3.0f);
+        Camera camera = new Camera(0f, 0.0f, 3.0f);
+
+        Texture texture = Texture.loadTexture(Constant.resources + "img_2.png");
+        Texture texture1 = Texture.loadTexture(Constant.resources + "img_3.png");
 
         Renderer renderer = new Renderer();
         renderer.glEnbale(GL_DEPTH_TEST);
 
-        renderer.init("/resources/light.vert","/resources/light.frag");
-        renderer.specifyVertexAttributes("position",3,6,0);
-        renderer.specifyVertexAttributes("normal",3,6,3);
-        //renderer.specifyVertexAttributes("texcoord",2,8,6);
+        renderer.init("/resources/light.vert", "/resources/light.frag");
+
+        VertexArrayObject vao = renderer.createVAO();
+        renderer.specifyVertexAttributes("position",vao, 3, 8, 0);
+        renderer.specifyVertexAttributes("normal", vao,3, 8, 3);
+        renderer.specifyVertexAttributes("texCoords",vao,2,8,6);
+
+        VertexArrayObject lightVao = renderer.createVAO();
+        renderer.specifyVertexAttributes("position",lightVao, 3, 6, 0);
 
         renderer.begin();
-        renderer.flush();
+        renderer.useTexture(GL_TEXTURE0, texture, "material.diffuse", 0);
+        renderer.useTexture(GL_TEXTURE1, texture1, "material.specular", 1);
 
         float[] ver = {
-                -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-                0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-                0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-                0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+                0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
+                0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+                0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
+                -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-                -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-                0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-                0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+                0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
+                0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+                0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
+                -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
 
-                -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-                -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-                -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-                -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-                -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-                -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+                -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+                -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+                -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+                -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+                -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+                -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-                0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-                0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-                0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-                0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-                0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-                0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+                0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
+                0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+                0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
+                0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
 
-                -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-                0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-                0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-                0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-                -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-                -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+                0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+                0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+                0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
 
-                -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-                0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-                0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-                0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-                -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-                -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
-
+                -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
+                0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
+                0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+                0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
+                -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
+                -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
         };
         while (!qqq.isClosing()) {
 
@@ -108,25 +113,27 @@ public class LightTest {
 
             renderer.clear();
 
-            keyPress(qqq,camera);
-            mousePress(camera);
+            keyListen(qqq, camera);
+
+            //renderer.setUniform("light.position", lightPos);
+            renderer.setUniform("light.direction", lightPos);
+            renderer.setUniform("viewPos",camera.getPosition());
+            renderer.setUniform("light.ambient",new Vector3f(0.2f));
+            renderer.setUniform("light.diffuse",new Vector3f(0.5f));
+            renderer.setUniform("light.specular",new Vector3f(1.0f));
+
+            renderer.setUniform("material.shininess",32.0f);
 
             Matrix4f viewMatrix = camera.getViewMatrix();
-            renderer.setUniform("model", new Matrix4f().rotate(20.0f, 0.0f, 1.0f, 0f));
+            renderer.setUniform("model", new Matrix4f().translate(0f, 0.0f, -2.0f));
             renderer.setUniform("view", viewMatrix);
             renderer.setUniform("projection", new Matrix4f().perspective((float) Math.toRadians(camera.getZoom()), qqq.getWidth() / qqq.getHeight(), 0.1f, 100.0f));
-
-            renderer.setUniform("objectColor", new Vector3f(1.0f, 0.5f, 0.31f));
-            renderer.setUniform("lightColor", new Vector3f(1.0f, 1.0f, 1.0f));
-            renderer.setUniform("lightPosLoc", lightPos);
-
             renderer.render(ver, 36);
 
-//            renderer.setUniform("model",new Matrix4f().translate(1.0f,-2.0f,-3.0f).rotate(2.5f * (float) glfwGetTime(), 0.5f, 1.0f, 0f));
-//            renderer.setUniform("view",new Matrix4f().translate(0f, 0f, -3.0f));
-//            renderer.setUniform("projection",new Matrix4f().perspective(45.0f, qqq.getWidth() / qqq.getHeight(), 0.1f, 100.0f));
-//
-//            renderer.render(ver,36);
+            renderer.setUniform("model", new Matrix4f().translate(1.2f, 1.0f, -5.0f));
+            renderer.setUniform("view", viewMatrix);
+            renderer.setUniform("projection", new Matrix4f().perspective((float) Math.toRadians(camera.getZoom()), qqq.getWidth() / qqq.getHeight(), 0.1f, 100.0f));
+            renderer.render(ver, 36);
 
             qqq.update();
         }
@@ -134,7 +141,13 @@ public class LightTest {
         renderer.dispose();
     }
 
-    private static void keyPress(QqqWindow window,Camera camera) {
+    public static void keyListen(QqqWindow qqq, Camera camera) {
+        keyPress(qqq, camera);
+        mousePress(qqq, camera);
+        scrollCallback(camera);
+    }
+
+    private static void keyPress(QqqWindow window, Camera camera) {
         if (KeyListener.isKeyPressed(GLFW_KEY_ESCAPE)) {
             window.close();
         }
@@ -156,12 +169,12 @@ public class LightTest {
         }
     }
 
-    private static void mousePress(Camera camera) {
+    private static void mousePress(QqqWindow qqqWindow, Camera camera) {
         float xpos = MouseListener.getX();
         float ypos = MouseListener.getY();
         if (firstMouse) {
-            lastX = xpos;
-            lastY = ypos;
+            lastX = qqqWindow.getWidth() / 2;
+            lastY = qqqWindow.getHeight() / 2;
             firstMouse = false;
         }
 
@@ -172,6 +185,12 @@ public class LightTest {
         lastY = ypos;
 
         camera.processMouseMovement(xoffset, yoffset, true);
+    }
+
+    public static void scrollCallback(Camera camera) {
+        float scrollX = MouseListener.getScrollX();
+        float scrollY = MouseListener.getScrollY();
+        camera.processMouseScroll(scrollY);
     }
 
     public static void main(String[] args) {

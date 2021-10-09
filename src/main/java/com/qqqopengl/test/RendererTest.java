@@ -51,7 +51,6 @@ public class RendererTest {
         Texture texture1 = Texture.loadTexture(Constant.resources + "img_1.png");
 
         renderer.begin();
-        renderer.flush();
 
         float[] ver = {
 

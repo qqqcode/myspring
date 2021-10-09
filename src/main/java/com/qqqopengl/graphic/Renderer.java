@@ -2,24 +2,25 @@ package com.qqqopengl.graphic;
 
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11C.GL_BLEND;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Renderer {
 
     VertexArrayObject vao;
     VertexBufferObject vbo;
+
+    Map<Integer,VertexArrayObject> vaoMap;
 
     private ShaderProgram program;
 
@@ -28,13 +29,30 @@ public class Renderer {
     private boolean drawing;
 
     public void init() {
-        setupSahderProgram();
+        //init()
+        vaoMap = new HashMap<>();
+        numVertices = 0;
+        drawing = false;
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     }
 
     public void init(String vertexShaderName, String fragmentShaderName) {
-        setupSahderProgram();
+
+        vaoMap = new HashMap<>();
+
+        vbo = new VertexBufferObject();
+        vbo.bind(GL_ARRAY_BUFFER);
+
+        vertices = MemoryUtil.memAllocFloat(4096);
+        long size = vertices.capacity() * Float.BYTES;
+        vbo.uploadData(GL_ARRAY_BUFFER, size, GL_DYNAMIC_DRAW);
+
+        numVertices = 0;
+        drawing = false;
+
         initShaderProgram(vertexShaderName, fragmentShaderName);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -68,6 +86,13 @@ public class Renderer {
     }
 
     public void draw(int mode, int first, int count) {
+        this.vao.bind();
+        glEnableVertexAttribArray(0);
+        glDrawArrays(mode, first, count);
+        glBindVertexArray(0);
+    }
+
+    public void draw(VertexArrayObject vao,int mode, int first, int count) {
         vao.bind();
         glEnableVertexAttribArray(0);
         glDrawArrays(mode, first, count);
@@ -78,6 +103,12 @@ public class Renderer {
         uploadVBO(vertice, count);
         program.use();
         draw(GL_TRIANGLES, 0, numVertices);
+    }
+
+    public void render(VertexArrayObject vao ,float[] vertice, int count) {
+        uploadVBO(vertice, count);
+        program.use();
+        draw(vao,GL_TRIANGLES, 0, numVertices);
     }
 
     public void cleanup() {
@@ -102,35 +133,6 @@ public class Renderer {
         numVertices = 0;
     }
 
-    public void end() {
-        if (!drawing) {
-            throw new IllegalStateException("Renderer isn't drawing!");
-        }
-        drawing = false;
-        flush();
-    }
-
-    public void flush() {
-        if (numVertices > 0) {
-            vertices.flip();
-
-            if (vao != null) {
-                vao.bind();
-            } else {
-                vbo.bind(GL_ARRAY_BUFFER);
-            }
-            program.use();
-
-            vbo.bind(GL_ARRAY_BUFFER);
-            vbo.uploadSubData(GL_ARRAY_BUFFER, 0, vertices);
-
-            glDrawArrays(GL_TRIANGLES, 0, numVertices);
-
-            vertices.clear();
-            numVertices = 0;
-        }
-    }
-
     public void dispose() {
         MemoryUtil.memFree(vertices);
 
@@ -145,6 +147,11 @@ public class Renderer {
         glActiveTexture(activePos);
         texture.bind();
         setUniform(uniformLocation, uniform);
+    }
+
+    public void setUniform(CharSequence name, float value) {
+        int ourTexture = program.getUniformLocation(name);
+        program.setUniform(ourTexture, value);
     }
 
     public void setUniform(CharSequence name, int value) {
@@ -163,8 +170,11 @@ public class Renderer {
     }
 
     private void setupSahderProgram() {
+
+        vaoMap = new HashMap<>();
         vao = new VertexArrayObject();
         vao.bind();
+        vaoMap.put(vao.getID(), vao);
 
         vbo = new VertexBufferObject();
         vbo.bind(GL_ARRAY_BUFFER);
@@ -207,6 +217,32 @@ public class Renderer {
         int v = program.getAttributeLocation(name);
         program.enableVertexAttribute(v);
         program.pointVertexAttribute(v, size, stride * Float.BYTES, offset * Float.BYTES);
+    }
+
+    public void specifyVertexAttributes(CharSequence name, VertexArrayObject vao, int size, int stride, int offset) {
+        vao.bind();
+        int v = program.getAttributeLocation(name);
+        program.enableVertexAttribute(v);
+        program.pointVertexAttribute(v, size, stride * Float.BYTES, offset * Float.BYTES);
+    }
+
+    public VertexArrayObject createVAO() {
+        VertexArrayObject vertexArrayObject = new VertexArrayObject();
+        if (this.vaoMap == null) {
+            this.vaoMap = new HashMap<>();
+        }
+        if (vao == null) {
+            vao = vertexArrayObject;
+        }
+        this.vaoMap.put(vertexArrayObject.getID(),vertexArrayObject);
+        return vertexArrayObject;
+    }
+
+    public VertexArrayObject getVAO(int id) {
+        if (this.vaoMap == null) {
+            this.vaoMap = new HashMap<>();
+        }
+        return this.vaoMap.get(id);
     }
 
 }

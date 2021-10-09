@@ -114,15 +114,61 @@ public class LightTest {
             renderer.clear();
 
             keyListen(qqq, camera);
+            renderer.setUniform("material.shininess",32.0f);
+            renderer.setUniform("viewPos",camera.getPosition());
+
+
 
             //renderer.setUniform("light.position", lightPos);
-            renderer.setUniform("light.direction", lightPos);
-            renderer.setUniform("viewPos",camera.getPosition());
-            renderer.setUniform("light.ambient",new Vector3f(0.2f));
-            renderer.setUniform("light.diffuse",new Vector3f(0.5f));
-            renderer.setUniform("light.specular",new Vector3f(1.0f));
+            renderer.setUniform("dirLight.direction", new Vector3f( -0.2f, -1.0f, -0.3f));
+            renderer.setUniform("dirLight.ambient",new Vector3f(0.05f));
+            renderer.setUniform("dirLight.diffuse",new Vector3f(0.4f));
+            renderer.setUniform("dirLight.specular",new Vector3f(0.5f));
 
-            renderer.setUniform("material.shininess",32.0f);
+            renderer.setUniform("pointLights[0].direction", new Vector3f( 0.7f, 0.2f, 2.0f));
+            renderer.setUniform("pointLights[0].ambient",new Vector3f(0.05f));
+            renderer.setUniform("pointLights[0].diffuse",new Vector3f(0.8f));
+            renderer.setUniform("pointLights[0].specular",new Vector3f(1.0f));
+            renderer.setUniform("pointLights[0].constant",1.0f);
+            renderer.setUniform("pointLights[0].linear",0.09f);
+            renderer.setUniform("pointLights[0].quadratic",0.032f);
+
+            renderer.setUniform("pointLights[1].direction", new Vector3f( 2.3f, -3.3f, -4.0f));
+            renderer.setUniform("pointLights[1].ambient",new Vector3f(0.05f));
+            renderer.setUniform("pointLights[1].diffuse",new Vector3f(0.8f));
+            renderer.setUniform("pointLights[1].specular",new Vector3f(1.0f));
+            renderer.setUniform("pointLights[1].constant",1.0f);
+            renderer.setUniform("pointLights[1].linear",0.09f);
+            renderer.setUniform("pointLights[1].quadratic",0.032f);
+
+            renderer.setUniform("pointLights[2].direction", new Vector3f( -4.0f, 2.0f, -12.0f));
+            renderer.setUniform("pointLights[2].ambient",new Vector3f(0.05f));
+            renderer.setUniform("pointLights[2].diffuse",new Vector3f(0.8f));
+            renderer.setUniform("pointLights[2].specular",new Vector3f(1.0f));
+            renderer.setUniform("pointLights[2].constant",1.0f);
+            renderer.setUniform("pointLights[2].linear",0.09f);
+            renderer.setUniform("pointLights[2].quadratic",0.032f);
+
+            renderer.setUniform("pointLights[3].direction", new Vector3f( 0f, 0f, -3.0f));
+            renderer.setUniform("pointLights[3].ambient",new Vector3f(0.05f));
+            renderer.setUniform("pointLights[3].diffuse",new Vector3f(0.8f));
+            renderer.setUniform("pointLights[3].specular",new Vector3f(1.0f));
+            renderer.setUniform("pointLights[3].constant",1.0f);
+            renderer.setUniform("pointLights[3].linear",0.09f);
+            renderer.setUniform("pointLights[3].quadratic",0.032f);
+
+            renderer.setUniform("spotLight.position", camera.getPosition());
+            renderer.setUniform("spotLight.position", camera.getFront());
+            renderer.setUniform("spotLight.ambient",new Vector3f(0f));
+            renderer.setUniform("spotLight.diffuse",new Vector3f(1.0f));
+            renderer.setUniform("spotLight.specular",new Vector3f(1.0f));
+            renderer.setUniform("spotLight.constant",1.0f);
+            renderer.setUniform("spotLight.linear",0.09f);
+            renderer.setUniform("spotLight.quadratic",0.032f);
+            renderer.setUniform("spotLight.cutOff", (float) Math.cos(Math.toRadians(12.5)));
+            renderer.setUniform("spotLight.outerCutOff",(float) Math.cos(Math.toRadians(15)));
+
+
 
             Matrix4f viewMatrix = camera.getViewMatrix();
             renderer.setUniform("model", new Matrix4f().translate(0f, 0.0f, -2.0f));

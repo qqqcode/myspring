@@ -123,4 +123,8 @@ public class Camera {
     public Vector3f getPosition() {
         return position;
     }
+
+    public Vector3f getFront() {
+        return front;
+    }
 }

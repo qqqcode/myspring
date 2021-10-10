@@ -12,6 +12,8 @@ import static org.lwjgl.stb.STBImage.*;
 public class Texture {
     private final int id;
 
+    private String type;
+
     /**
      * Width of the texture.
      */
@@ -113,6 +115,14 @@ public class Texture {
         if (height > 0) {
             this.height = height;
         }
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     /**

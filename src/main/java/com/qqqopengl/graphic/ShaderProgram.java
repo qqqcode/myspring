@@ -215,6 +215,16 @@ public class ShaderProgram {
         setUniform(uniformLocation,value);
     }
 
+    public void setUniform(CharSequence name, int value) {
+        int uniformLocation = getUniformLocation(name);
+        setUniform(uniformLocation,value);
+    }
+
+    public void setUniform(CharSequence name, float value) {
+        int uniformLocation = getUniformLocation(name);
+        setUniform(uniformLocation,value);
+    }
+
     /**
      * Use this shader program.
      */

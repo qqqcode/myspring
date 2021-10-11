@@ -1,5 +1,7 @@
 package com.qqqopengl.graphic;
 
+import com.qqqopengl.util.Constant;
+
 import java.io.*;
 
 import static org.lwjgl.opengl.GL20.*;
@@ -47,8 +49,6 @@ public class Shader {
 
     public static Shader loadShader(int type, String path) {
         StringBuilder builder = new StringBuilder();
-        path = System.getProperty("user.dir") + "/src/main"+ path;
-
         try (InputStream in = new FileInputStream(path);
              BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
             String line;

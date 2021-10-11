@@ -1,7 +1,13 @@
 package com.qqqopengl.graphic;
 
+import org.lwjgl.system.MemoryUtil;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.lwjgl.opengl.GL15.*;
@@ -13,24 +19,24 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 public class Mesh {
 
     VertexArrayObject vao;
-    VertexBufferObject vbo;
-    VertexBufferObject ebo;
 
-    FloatBuffer vertices;
-    IntBuffer indices;
+    float[] positions;
+    float[] textCoords;
+    float[] normals;
+    int[] indices;
 
+    List<Texture> textures = new ArrayList<>();
 
-    List<Texture> textures;
-
-    Mesh(FloatBuffer vertices, IntBuffer indices, List<Texture> textures) {
-        this.vertices = vertices;
+    Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
+        this.positions = positions;
+        this.textCoords = textCoords;
+        this.normals = normals;
         this.indices = indices;
-        this.textures = textures;
         setupMesh();
     }
 
-    void Draw(ShaderProgram shaderProgram) {
-        // Bind appropriate textures
+    void draw(ShaderProgram shaderProgram) {
+        shaderProgram.use();
         int diffuseNr = 1;
         int specularNr = 1;
         for (int i = 0; i < this.textures.size(); i++) {
@@ -38,51 +44,80 @@ public class Mesh {
             glActiveTexture(GL_TEXTURE0 + i);
 
             String type = texture.getType();
-            if (type != null && type !=""){
+            if (type != null && type != "") {
                 if (type == "texture_diffuse") {
                     type = type + diffuseNr;
-                    diffuseNr ++;
+                    diffuseNr++;
                 }
                 if (type == "texture_specular") {
                     type = type + specularNr;
-                    specularNr ++;
+                    specularNr++;
                 }
             }
-            shaderProgram.setUniform(type,i);
+            shaderProgram.setUniform(type, i);
             texture.bind();
         }
 
-        shaderProgram.setUniform("material.shininess",16.0f);
+        //shaderProgram.setUniform("material.shininess", 16.0f);
+
 
         glBindVertexArray(vao.getID());
-        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
-        for (int i = 0; i < this.textures.size();i++) {
+        for (int i = 0; i < this.textures.size(); i++) {
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D, 0);
         }
     }
+
+    public void freeBuffer(Buffer buffer) {
+        if (buffer != null) {
+            MemoryUtil.memFree(buffer);
+        }
+    }
+
     private void setupMesh() {
         vao = new VertexArrayObject();
-        vbo = new VertexBufferObject();
-        ebo = new VertexBufferObject();
+        VertexBufferObject posVbo = new VertexBufferObject();
+        VertexBufferObject norVbo = new VertexBufferObject();
+        VertexBufferObject texVbo = new VertexBufferObject();
+        VertexBufferObject ebo = new VertexBufferObject();
 
         vao.bind();
-        vbo.bind(GL_ARRAY_BUFFER);
-        vbo.uploadData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
 
         ebo.bind(GL_ELEMENT_ARRAY_BUFFER);
-        ebo.uploadData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+        IntBuffer indicesBuffer = MemoryUtil.memAllocInt(indices.length);
+        indicesBuffer.put(indices).flip();
+        ebo.uploadData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
+        freeBuffer(indicesBuffer);
 
+        //position
+        posVbo.bind(GL_ARRAY_BUFFER);
+        FloatBuffer vecPositionsBuffer = MemoryUtil.memAllocFloat(positions.length);
+        vecPositionsBuffer.put(positions).flip();
+        posVbo.uploadData(GL_ARRAY_BUFFER, vecPositionsBuffer, GL_STATIC_DRAW);
         glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * Float.BYTES, 0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
+        freeBuffer(vecPositionsBuffer);
 
+        //noraml
+        norVbo.bind(GL_ARRAY_BUFFER);
+        FloatBuffer vecNormalsBuffer = MemoryUtil.memAllocFloat(normals.length);
+        vecNormalsBuffer.put(normals).flip();
+        norVbo.uploadData(GL_ARRAY_BUFFER, vecNormalsBuffer, GL_STATIC_DRAW);
         glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * Float.BYTES, 3 * Float.BYTES);
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
+        freeBuffer(vecNormalsBuffer);
 
+        //texCoords
+        texVbo.bind(GL_ARRAY_BUFFER);
+        FloatBuffer vecTexCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.length);
+        vecTexCoordsBuffer.put(textCoords).flip();
+        texVbo.uploadData(GL_ARRAY_BUFFER, vecTexCoordsBuffer, GL_STATIC_DRAW);
         glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * Float.BYTES, 6 * Float.BYTES);
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 2 * Float.BYTES, 0);
+        freeBuffer(vecTexCoordsBuffer);
 
         glBindVertexArray(0);
     }

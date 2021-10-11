@@ -67,15 +67,6 @@ public class QqqWindow {
             glfwSwapInterval(1);
         }
 
-//        keyCallback = new GLFWKeyCallback() {
-//            @Override
-//            public void invoke(long window, int key, int scancode, int action, int mods) {
-//                if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-//                    glfwSetWindowShouldClose(window, true);
-//                }
-//            }
-//        };
-
         glfwSetKeyCallback(id, KeyListener::keyCallback);
         glfwSetCursorPosCallback(id, MouseListener::moustPosCallback);
         glfwSetMouseButtonCallback(id, MouseListener::mouseButtonCallback);

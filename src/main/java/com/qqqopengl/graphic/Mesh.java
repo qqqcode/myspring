@@ -27,6 +27,8 @@ public class Mesh {
 
     List<Texture> textures = new ArrayList<>();
 
+    Mesh() {}
+
     Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
         this.positions = positions;
         this.textCoords = textCoords;

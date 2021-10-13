@@ -3,6 +3,7 @@ package com.qqqopengl.graphic;
 import com.qqqopengl.util.Constant;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
@@ -10,6 +11,7 @@ import org.lwjgl.assimp.*;
 import java.io.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,35 +23,9 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Model {
 
-    public AIScene scene;
-    public List<Mesh> meshes;
-    public List<Material> materials;
-
-    Model(AIScene scene) {
-
-        this.scene = scene;
-
-        int meshCount = scene.mNumMeshes();
-        PointerBuffer meshesBuffer = scene.mMeshes();
-        meshes = new ArrayList<>();
-        for (int i = 0; i < meshCount; ++i) {
-            meshes.add(new Mesh());
-        }
-
-        int materialCount = scene.mNumMaterials();
-        PointerBuffer materialsBuffer = scene.mMaterials();
-        materials = new ArrayList<>();
-        for (int i = 0; i < materialCount; ++i) {
-            materials.add(new Material(AIMaterial.create(materialsBuffer.get(i))));
-        }
-    }
-
-    public void free() {
-        aiReleaseImport(scene);
-        scene = null;
-        meshes = null;
-        materials = null;
-    }
+    List<Mesh> meshes;
+    String directory;
+    List<Texture> textures;
 
 
     public Model(String path) {
@@ -97,13 +73,12 @@ public class Model {
                     aiFile.SeekProc().free();
                     aiFile.FileSizeProc().free();
                 });
-        AIScene scene = aiImportFileEx(Constant.resources + "magnet.obj", aiProcess_JoinIdenticalVertices | aiProcess_Triangulate, fileIo);
+        AIScene scene = aiImportFileEx(path, aiProcess_JoinIdenticalVertices | aiProcess_Triangulate, fileIo);
         fileIo.OpenProc().free();
         fileIo.CloseProc().free();
         if (scene == null) {
             throw new IllegalStateException(aiGetErrorString());
         }
-
         processNode(scene);
     }
 
@@ -125,10 +100,10 @@ public class Model {
     }
 //
     Mesh processMesh(AIMesh mesh, AIScene scene) {
-        // data to fill
+
         List<Vertex> vertices = new ArrayList<>();
         List<Integer> indices = new ArrayList<>();
-        List<Texture> textures;
+        List<Texture> textures = new ArrayList<>();
 
         for (int i = 0; i < mesh.mNumVertices(); i++) {
             AIVector3D vector = mesh.mVertices().get(i);
@@ -153,6 +128,7 @@ public class Model {
                 indices.add(face.mIndices().get(j));
             }
         }
+
         AIMaterial material = AIMaterial.create(scene.mMaterials().get(mesh.mMaterialIndex()));
 
         List<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
@@ -171,32 +147,18 @@ public class Model {
     }
 
     List<Texture> loadMaterialTextures(AIMaterial mat, int type, String typeName) {
-        List<Texture> textures = new ArrayList<>();
-        for (int i = 0; i < mat.sizeof(); i++) {
-            boolean skip = false;
+        AIColor4D colour = AIColor4D.create();
+        AIString path = AIString.calloc();
 
+        Assimp.aiGetMaterialTexture(mat, type, 0, path, (IntBuffer) null, null, null, null, null, null);
+        String textPath = path.dataString();
+        Texture texture = Texture.loadTexture(textPath);
+        texture.setType(typeName);
+
+        if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT,aiTextureType_NONE, 0, colour) != 0) {
+            throw new IllegalStateException(aiGetErrorString());
         }
-//        for(unsigned int i = 0; i < mat->GetTextureCount(type); i++)
-//        {
-//            aiString str;
-//            mat->GetTexture(type, i, &str);
-//            // check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
-//            bool skip = false;
-//            for(unsigned int j = 0; j < textures_loaded.size(); j++)
-//            {
-//                if(std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
-//                {
-//                    textures.push_back(textures_loaded[j]);
-//                    skip = true; // a texture with the same filepath has already been loaded, continue to next one. (optimization)
-//                    break;
-//                }
-//            }
-//            if(!skip)
-//            {   // if texture hasn't been loaded already, load it
-//                Texture texture = Texture.loadTexture("");
-//                textures_loaded.push_back(texture);  // store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
-//            }
-//        }
+
         return textures;
     }
 

@@ -34,7 +34,7 @@ public class ModelTest {
 
         ShaderProgram shaderProgram = ShaderUtil.createShaderProgram(Constant.resources + "model.vert", Constant.resources + "model.frag");
 
-        Model model = new Model(Constant.resources + "Lowpoly_tree_sample.obj");
+        Model model = new Model("Lowpoly_tree_sample.obj");
         while (!qqq.isClosing()) {
             float currentFrame = (float) glfwGetTime();
             deltaTime = currentFrame - lastFrame;

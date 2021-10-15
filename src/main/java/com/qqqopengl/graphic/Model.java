@@ -1,18 +1,13 @@
 package com.qqqopengl.graphic;
 
-import com.qqqopengl.util.Constant;
-import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-import org.lwjgl.BufferUtils;
+import com.qqqopengl.util.TextureCache;
+import com.qqqopengl.util.Util;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,17 +19,17 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class Model {
 
     List<Mesh> meshes;
-    String directory;
-    List<Texture> textures;
-
+    public List<Material> materials;
 
     public Model(String path) {
+        meshes = new ArrayList<>();
+        materials = new ArrayList<>();
         loadModel(path);
     }
 
     public void draw(ShaderProgram shaderProgram) {
         for (int i = 0; i < meshes.size(); i++) {
-
+            meshes.get(i).draw(shaderProgram);
         }
     }
 
@@ -84,11 +79,19 @@ public class Model {
 
 
     void processNode(AIScene scene) {
-        AINode aiNode = scene.mRootNode();
         PointerBuffer meshBuffer = scene.mMeshes();
-        for (int i = 0; i < aiNode.mNumMeshes(); i++) {
+        int meshCount = scene.mNumMeshes();
+        for (int i = 0; i < meshCount; i++) {
             AIMesh aiMesh = AIMesh.create(meshBuffer.get(i));
             meshes.add(processMesh(aiMesh,scene));
+        }
+
+        int numMaterials = scene.mNumMaterials();
+        PointerBuffer aiMaterials = scene.mMaterials();
+        for (int i = 0; i < numMaterials; i++) {
+            AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
+            Material material = new Material(aiMaterial);
+            materials.add(material);
         }
 
 //
@@ -99,67 +102,56 @@ public class Model {
 
     }
 //
-    Mesh processMesh(AIMesh mesh, AIScene scene) {
+    Mesh processMesh(AIMesh aiMesh, AIScene scene) {
 
-        List<Vertex> vertices = new ArrayList<>();
-        List<Integer> indices = new ArrayList<>();
-        List<Texture> textures = new ArrayList<>();
+        List<Float> vertices = new ArrayList<>();
+        List<Float> textures = new ArrayList<>();
+        List<Float> normals = new ArrayList<>();
+        List<Integer> indices = new ArrayList();
 
-        for (int i = 0; i < mesh.mNumVertices(); i++) {
-            AIVector3D vector = mesh.mVertices().get(i);
-            Vector3f position = new Vector3f(vector.x(),vector.y(),vector.z());
-            vector = mesh.mNormals().get(i);
-            Vector3f normal = new Vector3f(vector.x(),vector.y(),vector.z());
+        for (int i = 0; i < aiMesh.mNumVertices(); i++) {
+            AIVector3D vector = aiMesh.mVertices().get(i);
+            vertices.add(vector.x());
+            vertices.add(vector.y());
+            vertices.add(vector.z());
 
-            Vector2f texCoords = new Vector2f();
-            if (mesh.mTextureCoords(0) != null) {
-                vector = mesh.mTextureCoords(0).get(i);
-                texCoords.set(vector.x(),vector.y());
+            vector = aiMesh.mNormals().get(i);
+            normals.add(vector.x());
+            normals.add(vector.y());
+            normals.add(vector.z());
+
+            if (aiMesh.mTextureCoords(0) != null) {
+                vector = aiMesh.mTextureCoords(0).get(i);
+                textures.add(vector.x());
+                textures.add(vector.y());
             } else  {
-                texCoords.set(0.0f, 0.0f);
+                textures.add(0.0f);
+                textures.add(0.0f);
             }
-            Vertex vertex = new Vertex(position,normal,texCoords);
-            vertices.add(vertex);
         }
 
-        for (int i = 0; i < mesh.mNumFaces(); i++) {
-            AIFace face = mesh.mFaces().get(i);
+        for (int i = 0; i < aiMesh.mNumFaces(); i++) {
+            AIFace face = aiMesh.mFaces().get(i);
             for (int j = 0; j < face.mNumIndices(); j++) {
                 indices.add(face.mIndices().get(j));
             }
         }
 
-        AIMaterial material = AIMaterial.create(scene.mMaterials().get(mesh.mMaterialIndex()));
 
-        List<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
-        //textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
+        Mesh mesh = new Mesh(Util.listToFloatArray(vertices),Util.listToFloatArray(textures),Util.listToFloatArray(normals),Util.listToIntArray(indices));
 
-        List<Texture> specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular");
-        //textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        AIMaterial aiMaterial = AIMaterial.create(scene.mMaterials().get(aiMesh.mMaterialIndex()));
 
-        List<Texture> normalMaps = loadMaterialTextures(material, aiTextureType_HEIGHT, "texture_normal");
-        //textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-
-        List<Texture> heightMaps = loadMaterialTextures(material, aiTextureType_AMBIENT, "texture_height");
-        //textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
-
-        return null;//Mesh(vertices, indices, textures);
-    }
-
-    List<Texture> loadMaterialTextures(AIMaterial mat, int type, String typeName) {
-        AIColor4D colour = AIColor4D.create();
         AIString path = AIString.calloc();
-
-        Assimp.aiGetMaterialTexture(mat, type, 0, path, (IntBuffer) null, null, null, null, null, null);
+        Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, 0, path, (IntBuffer) null, null, null, null, null, null);
         String textPath = path.dataString();
-        Texture texture = Texture.loadTexture(textPath);
-        texture.setType(typeName);
-
-        if (aiGetMaterialColor(mat, AI_MATKEY_COLOR_AMBIENT,aiTextureType_NONE, 0, colour) != 0) {
-            throw new IllegalStateException(aiGetErrorString());
+        Texture texture = null;
+        if (textPath != null && textPath.length() > 0) {
+            TextureCache textCache = TextureCache.getInstance();
+            texture = textCache.getTexture(textPath);
         }
 
-        return textures;
+        return mesh;
     }
 
 }

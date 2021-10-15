@@ -5,6 +5,7 @@ import com.qqqopengl.listener.PollEvents;
 import com.qqqopengl.util.Constant;
 import com.qqqopengl.util.ShaderUtil;
 import org.joml.Matrix4f;
+import org.joml.Matrix4x3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -34,7 +35,8 @@ public class ModelTest {
 
         ShaderProgram shaderProgram = ShaderUtil.createShaderProgram(Constant.resources + "model.vert", Constant.resources + "model.frag");
 
-        Model model = new Model("Lowpoly_tree_sample.obj");
+        Model model = new Model("magnet.obj");
+        Matrix4x3f modelMatrix = new Matrix4x3f().rotateY(0.5f * (float) Math.PI).scale(1.5f, 1.5f, 1.5f);
         while (!qqq.isClosing()) {
             float currentFrame = (float) glfwGetTime();
             deltaTime = currentFrame - lastFrame;
@@ -47,6 +49,7 @@ public class ModelTest {
             shaderProgram.setUniform("model", new Matrix4f().translate(0f, 0.0f, -2.0f));
             shaderProgram.setUniform("view", viewMatrix);
             shaderProgram.setUniform("projection", new Matrix4f().perspective((float) Math.toRadians(camera.getZoom()), qqq.getWidth() / qqq.getHeight(), 0.1f, 100.0f));
+
             model.draw(shaderProgram);
 
             qqq.update();

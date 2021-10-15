@@ -2,8 +2,6 @@ package com.qqqopengl.graphic;
 
 import org.lwjgl.system.MemoryUtil;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -19,6 +17,10 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 public class Mesh {
 
     VertexArrayObject vao;
+    VertexBufferObject posVbo;
+    VertexBufferObject norVbo;
+    VertexBufferObject texVbo;
+    VertexBufferObject ebo;
 
     float[] positions;
     float[] textCoords;
@@ -26,8 +28,6 @@ public class Mesh {
     int[] indices;
 
     List<Texture> textures = new ArrayList<>();
-
-    Mesh() {}
 
     Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
         this.positions = positions;
@@ -81,10 +81,10 @@ public class Mesh {
 
     private void setupMesh() {
         vao = new VertexArrayObject();
-        VertexBufferObject posVbo = new VertexBufferObject();
-        VertexBufferObject norVbo = new VertexBufferObject();
-        VertexBufferObject texVbo = new VertexBufferObject();
-        VertexBufferObject ebo = new VertexBufferObject();
+        posVbo = new VertexBufferObject();
+        norVbo = new VertexBufferObject();
+        texVbo = new VertexBufferObject();
+        ebo = new VertexBufferObject();
 
         vao.bind();
 

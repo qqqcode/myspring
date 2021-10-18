@@ -13,6 +13,7 @@ import java.util.List;
 
 import static com.qqqopengl.util.IOUtil.ioResourceToByteBuffer;
 import static org.lwjgl.assimp.Assimp.*;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
 
@@ -28,6 +29,7 @@ public class Model {
     }
 
     public void draw(ShaderProgram shaderProgram) {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         for (int i = 0; i < meshes.size(); i++) {
             meshes.get(i).draw(shaderProgram);
         }

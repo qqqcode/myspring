@@ -11,6 +11,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 
 public class ModelTest {
 
@@ -34,6 +35,17 @@ public class ModelTest {
         Camera camera = new Camera(0f, 0.0f, 3.0f);
 
         ShaderProgram shaderProgram = ShaderUtil.createShaderProgram(Constant.resources + "model.vert", Constant.resources + "model.frag");
+        int aVertex = shaderProgram.getAttributeLocation("aVertex");
+        glEnableVertexAttribArray(aVertex);
+        int aNormal = shaderProgram.getAttributeLocation("aNormal");
+        glEnableVertexAttribArray(aNormal);
+        int uModelMatrix = shaderProgram.getAttributeLocation("uModelMatrix");
+        int uViewProjectionMatrix = shaderProgram.getAttributeLocation("uViewProjectionMatrix");
+        int uNormalMatrix = shaderProgram.getAttributeLocation("uNormalMatrix");
+        int uLightPosition = shaderProgram.getAttributeLocation("uLightPosition");
+        int uViewPosition = shaderProgram.getAttributeLocation("uViewPosition");
+        int uAmbientColor = shaderProgram.getAttributeLocation("uAmbientColor");
+        int uDiffuseColor = shaderProgram.getAttributeLocation("uDiffuseColor");
 
         Model model = new Model("magnet.obj");
         Matrix4x3f modelMatrix = new Matrix4x3f().rotateY(0.5f * (float) Math.PI).scale(1.5f, 1.5f, 1.5f);

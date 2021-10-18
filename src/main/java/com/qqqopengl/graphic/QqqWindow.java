@@ -2,12 +2,17 @@ package com.qqqopengl.graphic;
 
 import com.qqqopengl.listener.KeyListener;
 import com.qqqopengl.listener.MouseListener;
-import org.lwjgl.glfw.GLFWVidMode;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLCapabilities;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.IntBuffer;
+
+import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 
 public class QqqWindow {
 
@@ -34,18 +39,18 @@ public class QqqWindow {
         GLCapabilities caps = GL.getCapabilities();
         glfwDestroyWindow(temp);
         glfwDefaultWindowHints();
-        if (caps.OpenGL32) {
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-        } else if (caps.OpenGL21) {
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-        } else {
-            throw new RuntimeException("Neither OpenGL 3.2 nor OpenGL 2.1 is "
-                    + "supported, you may want to update your graphics driver.");
-        }
+//        if (caps.OpenGL32) {
+//            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+//            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+//            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+//            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+//        } else if (caps.OpenGL21) {
+//            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+//            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+//        } else {
+//            throw new RuntimeException("Neither OpenGL 3.2 nor OpenGL 2.1 is "
+//                    + "supported, you may want to update your graphics driver.");
+//        }
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         id = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -61,16 +66,46 @@ public class QqqWindow {
         );
 
         glfwMakeContextCurrent(id);
+        glfwSwapInterval(0);
+        glfwSetCursorPos(id, width / 2, height / 2);
+
         GL.createCapabilities();
 
         if (vsync) {
             glfwSwapInterval(1);
         }
 
-        glfwSetKeyCallback(id, KeyListener::keyCallback);
-        glfwSetCursorPosCallback(id, MouseListener::moustPosCallback);
-        glfwSetMouseButtonCallback(id, MouseListener::mouseButtonCallback);
-        glfwSetScrollCallback(id, MouseListener::mouseScrollCallback);
+        setKeyCallback(KeyListener::keyCallback);
+        setCursorPosCallback(MouseListener::moustPosCallback);
+        setMouseButtonCallback(MouseListener::mouseButtonCallback);
+        setScrollCallback(MouseListener::mouseScrollCallback);
+    }
+
+    public void setFramebufferSizeCallback(GLFWFramebufferSizeCallbackI cbfun) {
+        glfwSetFramebufferSizeCallback(id,cbfun);
+    }
+
+    public void showWindow() {
+        glfwShowWindow(id);
+    }
+
+    public void setWindowSizeCallback(GLFWWindowSizeCallbackI cbfun) {
+        glfwSetWindowSizeCallback(id,cbfun);
+    }
+
+    public void setKeyCallback(GLFWKeyCallbackI cbfun) {
+        glfwSetKeyCallback(id, cbfun);
+    }
+
+    public void setCursorPosCallback(GLFWCursorPosCallbackI cbfun) {
+        glfwSetCursorPosCallback(id, cbfun);
+    }
+
+    public void setMouseButtonCallback(GLFWMouseButtonCallbackI cbfun) {
+        glfwSetMouseButtonCallback(id, cbfun);
+    }
+    public void setScrollCallback(GLFWScrollCallbackI cbfun) {
+        glfwSetScrollCallback(id, cbfun);
     }
 
     public boolean isClosing() {
@@ -91,8 +126,8 @@ public class QqqWindow {
     }
 
     public void destroy() {
+        glfwFreeCallbacks(id);
         glfwDestroyWindow(id);
-        //keyCallback.free();
     }
 
     public void setVSync(boolean vsync) {
@@ -114,5 +149,9 @@ public class QqqWindow {
 
     public int getHeight() {
         return height;
+    }
+
+    public long getId() {
+        return id;
     }
 }

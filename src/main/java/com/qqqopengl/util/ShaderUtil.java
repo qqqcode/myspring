@@ -18,6 +18,7 @@ public class ShaderUtil {
         ShaderProgram program = new ShaderProgram();
         program.attachShader(vertexShader);
         program.attachShader(fragmentShader);
+        program.link();
         return program;
     }
 

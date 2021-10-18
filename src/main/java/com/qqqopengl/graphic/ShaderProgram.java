@@ -20,104 +20,57 @@ public class ShaderProgram {
 
     private final Map<String, Integer> uniforms;
 
-    /**
-     * Creates a shader program.
-     */
+    public int getId() {
+        return id;
+    }
+
     public ShaderProgram() {
         id = glCreateProgram();
         uniforms = new HashMap<>();
     }
 
-    /**
-     * Attach a shader to this program.
-     *
-     * @param shader Shader to get attached
-     */
     public void attachShader(Shader shader) {
         glAttachShader(id, shader.getID());
     }
 
-    /**
-     * Binds the fragment out color variable.
-     *
-     * @param number Color number you want to bind
-     * @param name   Variable name
-     */
     public void bindFragmentDataLocation(int number, CharSequence name) {
         glBindFragDataLocation(id, number, name);
     }
 
-    /**
-     * Link this program and check it's status afterwards.
-     */
     public void link() {
         glLinkProgram(id);
 
         checkStatus();
     }
 
-    /**
-     * Gets the location of an attribute variable with specified name.
-     *
-     * @param name Attribute name
-     *
-     * @return Location of the attribute
-     */
     public int getAttributeLocation(CharSequence name) {
         return glGetAttribLocation(id, name);
     }
 
-    /**
-     * Enables a vertex attribute.
-     *
-     * @param location Location of the vertex attribute
-     */
     public void enableVertexAttribute(int location) {
         glEnableVertexAttribArray(location);
     }
 
-    /**
-     * Disables a vertex attribute.
-     *
-     * @param location Location of the vertex attribute
-     */
     public void disableVertexAttribute(int location) {
         glDisableVertexAttribArray(location);
     }
 
-    /**
-     * Sets the vertex attribute pointer.
-     *
-     * @param location Location of the vertex attribute
-     * @param size     Number of values per vertex
-     * @param stride   Offset between consecutive generic vertex attributes in
-     *                 bytes
-     * @param offset   Offset of the first component of the first generic vertex
-     *                 attribute in bytes
-     */
     public void pointVertexAttribute(int location, int size, int stride, int offset) {
         glVertexAttribPointer(location, size, GL_FLOAT, false, stride, offset);
     }
 
-    /**
-     * Gets the location of an uniform variable with specified name.
-     *
-     * @param name Uniform name
-     *
-     * @return Location of the uniform
-     */
+    public void pointVertexAttribute(CharSequence name, int size, int stride, int offset) {
+        int location = getAttributeLocation(name);
+        enableVertexAttribute(location);
+        glVertexAttribPointer(location, size, GL_FLOAT, false, stride, offset);
+    }
+
     public int getUniformLocation(CharSequence name) {
         int uniformLocation = glGetUniformLocation(id, name);
         uniforms.put(name.toString(),uniformLocation);
         return uniformLocation;
     }
 
-    /**
-     * Sets the uniform variable for specified location.
-     *
-     * @param location Uniform location
-     * @param value    Value to set
-     */
     public void setUniform(int location, int value) {
         glUniform1i(location, value);
     }
@@ -126,12 +79,6 @@ public class ShaderProgram {
         glUniform1f(location, value);
     }
 
-    /**
-     * Sets the uniform variable for specified location.
-     *
-     * @param location Uniform location
-     * @param value    Value to set
-     */
     public void setUniform(int location, Vector2f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(2);
@@ -140,12 +87,6 @@ public class ShaderProgram {
         }
     }
 
-    /**
-     * Sets the uniform variable for specified location.
-     *
-     * @param location Uniform location
-     * @param value    Value to set
-     */
     public void setUniform(int location, Vector3f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(3);
@@ -154,12 +95,14 @@ public class ShaderProgram {
         }
     }
 
-    /**
-     * Sets the uniform variable for specified location.
-     *
-     * @param location Uniform location
-     * @param value    Value to set
-     */
+    public void setNglUniform3fv(int location, int count, long value) {
+        nglUniform3fv(location, count, value);
+    }
+
+    public void setUniform3f(int location, FloatBuffer value) {
+        glUniform3fv(location, value);
+    }
+
     public void setUniform(int location, Vector4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(4);
@@ -168,12 +111,6 @@ public class ShaderProgram {
         }
     }
 
-    /**
-     * Sets the uniform variable for specified location.
-     *
-     * @param location Uniform location
-     * @param value    Value to set
-     */
     public void setUniform(int location, Matrix2f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(2 * 2);
@@ -182,12 +119,6 @@ public class ShaderProgram {
         }
     }
 
-    /**
-     * Sets the uniform variable for specified location.
-     *
-     * @param location Uniform location
-     * @param value    Value to set
-     */
     public void setUniform(int location, Matrix3f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(3 * 3);
@@ -196,12 +127,6 @@ public class ShaderProgram {
         }
     }
 
-    /**
-     * Sets the uniform variable for specified location.
-     *
-     * @param location Uniform location
-     * @param value    Value to set
-     */
     public void setUniform(int location, Matrix4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(4 * 4);
@@ -210,7 +135,25 @@ public class ShaderProgram {
         }
     }
 
+    public void setUniformMatrix4f(int location,FloatBuffer value) {
+        glUniformMatrix4fv(location, false, value);
+    }
+
+    public void setUniformMatrix3f(int location,FloatBuffer value) {
+        glUniformMatrix3fv(location, false, value);
+    }
+
     public void setUniform(CharSequence name, Matrix4f value) {
+        int uniformLocation = getUniformLocation(name);
+        setUniform(uniformLocation,value);
+    }
+
+    public void setUniform(CharSequence name, Matrix3f value) {
+        int uniformLocation = getUniformLocation(name);
+        setUniform(uniformLocation,value);
+    }
+
+    public void setUniform(CharSequence name, Vector3f value) {
         int uniformLocation = getUniformLocation(name);
         setUniform(uniformLocation,value);
     }
@@ -225,6 +168,15 @@ public class ShaderProgram {
         setUniform(uniformLocation,value);
     }
 
+    public void setUniform4f(CharSequence name, FloatBuffer value) {
+        int location = getUniformLocation(name);
+        glUniformMatrix4fv(location, false, value);
+    }
+
+    public void setUniform3f(CharSequence name, FloatBuffer value) {
+        int location = getUniformLocation(name);
+        glUniformMatrix3fv(location, false, value);
+    }
     /**
      * Use this shader program.
      */

@@ -5,6 +5,7 @@ import org.lwjgl.BufferUtils;
 import java.io.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.channels.FileChannel;
 
 public class IOUtil {

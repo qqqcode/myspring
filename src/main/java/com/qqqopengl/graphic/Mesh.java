@@ -1,128 +1,64 @@
 package com.qqqopengl.graphic;
 
-import com.qqqopengl.test.ImportModelTest;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
-import org.joml.Matrix4x3f;
-import org.joml.Vector3f;
-import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.assimp.AIFace;
+import org.lwjgl.assimp.AIMaterial;
+import org.lwjgl.assimp.AIMesh;
+import org.lwjgl.assimp.AIVector3D;
 
-import java.nio.Buffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
-import static org.lwjgl.opengl.ARBShaderObjects.*;
-import static org.lwjgl.opengl.ARBShaderObjects.nglUniform3fvARB;
-import static org.lwjgl.opengl.ARBVertexBufferObject.*;
-import static org.lwjgl.opengl.ARBVertexProgram.glVertexAttribPointerARB;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class Mesh {
 
-    VertexArrayObject vao;
-    VertexBufferObject posVbo;
-    VertexBufferObject norVbo;
-    VertexBufferObject texVbo;
-    VertexBufferObject ebo;
+    public Material material;
 
-    float[] positions;
-    float[] textCoords;
-    float[] normals;
-    int[] indices;
+    public VertexBufferObject vertexArrayBuffer;
+    public VertexBufferObject normalArrayBuffer;
+    public VertexBufferObject elementArrayBuffer;
+    public int elementCount;
 
 
-    Mesh(float[] positions, float[] textCoords, float[] normals, int[] indices) {
-        this.positions = positions;
-        this.textCoords = textCoords;
-        this.normals = normals;
-        this.indices = indices;
-        setupMesh();
-    }
+    public Mesh(AIMesh mesh,AIMaterial aiMaterial) {
+        material = new Material(aiMaterial);
 
-    void draw(ShaderProgram shaderProgram) {
-        shaderProgram.use();
-        int aVertex = shaderProgram.getAttributeLocation("aVertex");
-        glEnableVertexAttribArray(aVertex);
-        int aNormal = shaderProgram.getAttributeLocation("aNormal");
-        glEnableVertexAttribArray(aNormal);
+        vertexArrayBuffer = new VertexBufferObject();
+        vertexArrayBuffer.bind(GL_ARRAY_BUFFER);
+        AIVector3D.Buffer vertices = mesh.mVertices();
+        nglBufferData(GL_ARRAY_BUFFER, AIVector3D.SIZEOF * vertices.remaining(),vertices.address(), GL_STATIC_DRAW);
 
-        posVbo.bind(GL_ARRAY_BUFFER);
-        glVertexAttribPointer(aVertex, 3, GL_FLOAT, false, 0, 0);
+        normalArrayBuffer = new VertexBufferObject();
+        normalArrayBuffer.bind(GL_ARRAY_BUFFER);
+        AIVector3D.Buffer normals = mesh.mNormals();
+        nglBufferData(GL_ARRAY_BUFFER, AIVector3D.SIZEOF * normals.remaining(),normals.address(), GL_STATIC_DRAW);
 
-        norVbo.bind(GL_ARRAY_BUFFER);
-        glVertexAttribPointer(aNormal, 3, GL_FLOAT, false, 0, 0);
-
-        shaderProgram.setUniform("uModelMatrix",new Matrix4f().rotateY(0.5f * (float) Math.PI).scale(1.5f, 1.5f, 1.5f));
-        shaderProgram.setUniform("uViewProjectionMatrix",new Matrix4f());
-        shaderProgram.setUniform("uNormalMatrix",new Matrix3f());
-        shaderProgram.setUniform("uLightPosition",new Vector3f(-5f, 5f, 5f));
-        shaderProgram.setUniform("uViewPosition",new Vector3f());
-
-
-        vao.bind();
-        ebo.bind(GL_ELEMENT_ARRAY_BUFFER);
-        glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0);
-
-    }
-
-    public void freeBuffer(Buffer buffer) {
-        if (buffer != null) {
-            MemoryUtil.memFree(buffer);
+        int faceCount = mesh.mNumFaces();
+        elementCount = faceCount * 3;
+        IntBuffer elementArrayBufferData = BufferUtils.createIntBuffer(elementCount);
+        AIFace.Buffer facesBuffer = mesh.mFaces();
+        for (int i = 0; i < faceCount; ++i) {
+            AIFace face = facesBuffer.get(i);
+            if (face.mNumIndices() != 3) {
+                throw new IllegalStateException("AIFace.mNumIndices() != 3");
+            }
+            elementArrayBufferData.put(face.mIndices());
         }
+        elementArrayBufferData.flip();
+        elementArrayBuffer = new VertexBufferObject();
+        elementArrayBuffer.bind(GL_ELEMENT_ARRAY_BUFFER);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementArrayBufferData, GL_STATIC_DRAW);
     }
 
-    private void setupMesh() {
-        vao = new VertexArrayObject();
-        posVbo = new VertexBufferObject();
-        norVbo = new VertexBufferObject();
-        texVbo = new VertexBufferObject();
-        ebo = new VertexBufferObject();
+    public void draw(ShaderProgram shaderProgram) {
+        this.vertexArrayBuffer.bind(GL_ARRAY_BUFFER);
+        shaderProgram.pointVertexAttribute("aVertex",3,0,0);
+        this.normalArrayBuffer.bind(GL_ARRAY_BUFFER);
+        shaderProgram.pointVertexAttribute("aNormal",3,0,0);
+        this.elementArrayBuffer.bind(GL_ELEMENT_ARRAY_BUFFER);
+        glDrawElements(GL_TRIANGLES, this.elementCount, GL_UNSIGNED_INT, 0);
 
-        vao.bind();
-
-        ebo.bind(GL_ELEMENT_ARRAY_BUFFER);
-        IntBuffer indicesBuffer = MemoryUtil.memAllocInt(indices.length);
-        indicesBuffer.put(indices).flip();
-        ebo.uploadData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
-        freeBuffer(indicesBuffer);
-
-        //position
-        posVbo.bind(GL_ARRAY_BUFFER);
-        FloatBuffer vecPositionsBuffer = MemoryUtil.memAllocFloat(positions.length);
-        vecPositionsBuffer.put(positions).flip();
-        posVbo.uploadData(GL_ARRAY_BUFFER, vecPositionsBuffer, GL_STATIC_DRAW);
-
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
-        freeBuffer(vecPositionsBuffer);
-
-        //noraml
-        norVbo.bind(GL_ARRAY_BUFFER);
-        FloatBuffer vecNormalsBuffer = MemoryUtil.memAllocFloat(normals.length);
-        vecNormalsBuffer.put(normals).flip();
-        norVbo.uploadData(GL_ARRAY_BUFFER, vecNormalsBuffer, GL_STATIC_DRAW);
-
-        glEnableVertexAttribArray(1);
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 3 * Float.BYTES, 0);
-        freeBuffer(vecNormalsBuffer);
-
-        //texCoords
-        texVbo.bind(GL_ARRAY_BUFFER);
-        FloatBuffer vecTexCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.length);
-        vecTexCoordsBuffer.put(textCoords).flip();
-        texVbo.uploadData(GL_ARRAY_BUFFER, vecTexCoordsBuffer, GL_STATIC_DRAW);
-
-        glEnableVertexAttribArray(2);
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 2 * Float.BYTES, 0);
-        freeBuffer(vecTexCoordsBuffer);
-
-        glBindVertexArray(0);
     }
 
 }

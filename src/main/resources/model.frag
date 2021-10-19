@@ -1,21 +1,17 @@
 #version 330
 
-in  vec2 TexCoords;
-in  vec3 Normal;
-out vec4 fragColor;
+uniform vec3 uAmbientColor;
+uniform vec3 uDiffuseColor;
+uniform vec3 uSpecularColor;
 
-uniform sampler2D texture_sampler;
-uniform vec3 colour;
-uniform int useColour;
 
-void main()
-{
-    if ( useColour == 1 )
-    {
-        fragColor = vec4(colour, 1);
-    }
-    else
-    {
-        fragColor = texture(texture_sampler, TexCoords);
-    }
+void main() {
+    float ambientStrength = 0.5;
+    float diffuseStrength = 0.5;
+    float specularStrength = 0.5;
+    float shininess = 4.0;
+    vec3 ambientColor = ambientStrength * uAmbientColor;
+    vec3 diffuseColor = diffuseStrength * uDiffuseColor;
+    vec3 specularColor = specularStrength * uSpecularColor;
+    gl_FragColor = vec4(ambientColor + diffuseColor + specularColor, 1.0);
 }

@@ -1,28 +1,40 @@
 package com.qqqopengl.test;
 
 import com.qqqopengl.graphic.*;
-import com.qqqopengl.listener.PollEvents;
 import com.qqqopengl.util.Constant;
 import com.qqqopengl.util.ShaderUtil;
 import org.joml.Matrix4f;
-import org.joml.Matrix4x3f;
+import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.system.Callback;
+
+import java.io.IOException;
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 
 public class ModelTest {
 
-    static int SCR_WIDTH = 800;
-    static int SCR_HEIGHT = 600;
-    static float deltaTime = 0.0f;
-    static float lastFrame = 0.0f;
+    QqqWindow qqqWindow;
+    Camera camera;
+    int width = 1024;
+    int height = 768;
 
-    static boolean firstMouse = true;
+    ShaderProgram shaderProgram;
+    Model model;
 
-    public static void run() {
+    Callback debugProc;
+
+    int lightPositionUniform;
+    int viewPositionUniform;
+    int ambientColorUniform;
+    int diffuseColorUniform;
+    int specularColorUniform;
+
+    void init() throws IOException {
 
         GLFWErrorCallback errorCallback = GLFWErrorCallback.createPrint(System.err);
         glfwSetErrorCallback(errorCallback);
@@ -30,45 +42,82 @@ public class ModelTest {
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
+        qqqWindow = new QqqWindow("qqq", width, height, true);
+        //debugProc = GLUtil.setupDebugMessageCallback();
 
-        QqqWindow qqq = new QqqWindow("qqqlight", SCR_WIDTH, SCR_HEIGHT, true);
-        Camera camera = new Camera(0f, 0.0f, 3.0f);
+        glClearColor(0f, 0f, 0f, 1f);
+        glEnable(GL_DEPTH_TEST);
 
-        ShaderProgram shaderProgram = ShaderUtil.createShaderProgram(Constant.resources + "model.vert", Constant.resources + "model.frag");
-        int aVertex = shaderProgram.getAttributeLocation("aVertex");
-        glEnableVertexAttribArray(aVertex);
-        int aNormal = shaderProgram.getAttributeLocation("aNormal");
-        glEnableVertexAttribArray(aNormal);
-        int uModelMatrix = shaderProgram.getAttributeLocation("uModelMatrix");
-        int uViewProjectionMatrix = shaderProgram.getAttributeLocation("uViewProjectionMatrix");
-        int uNormalMatrix = shaderProgram.getAttributeLocation("uNormalMatrix");
-        int uLightPosition = shaderProgram.getAttributeLocation("uLightPosition");
-        int uViewPosition = shaderProgram.getAttributeLocation("uViewPosition");
-        int uAmbientColor = shaderProgram.getAttributeLocation("uAmbientColor");
-        int uDiffuseColor = shaderProgram.getAttributeLocation("uDiffuseColor");
+        camera = new Camera(0f,0.0f,3.0f);
 
-        Model model = new Model("magnet.obj");
-        Matrix4x3f modelMatrix = new Matrix4x3f().rotateY(0.5f * (float) Math.PI).scale(1.5f, 1.5f, 1.5f);
-        while (!qqq.isClosing()) {
-            float currentFrame = (float) glfwGetTime();
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
+        model = new Model("magnet.obj");
+        createProgram();
+        qqqWindow.showWindow();
+    }
 
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            PollEvents.keyPress(qqq, camera, deltaTime);
-            Matrix4f viewMatrix = camera.getViewMatrix();
-            shaderProgram.setUniform("model", new Matrix4f().translate(0f, 0.0f, -2.0f));
-            shaderProgram.setUniform("view", viewMatrix);
-            shaderProgram.setUniform("projection", new Matrix4f().perspective((float) Math.toRadians(camera.getZoom()), qqq.getWidth() / qqq.getHeight(), 0.1f, 100.0f));
+    void createProgram() throws IOException {
 
-            model.draw(shaderProgram);
+        shaderProgram =ShaderUtil.createShaderProgram(Constant.resources + "magnet.vs",Constant.resources + "magnet.fs");
 
-            qqq.update();
+        shaderProgram.use();
+
+        lightPositionUniform = shaderProgram.getUniformLocation("uLightPosition");
+        viewPositionUniform = shaderProgram.getUniformLocation("uViewPosition");
+        ambientColorUniform = shaderProgram.getUniformLocation("uAmbientColor");
+        diffuseColorUniform = shaderProgram.getUniformLocation("uDiffuseColor");
+        specularColorUniform = shaderProgram.getUniformLocation("uSpecularColor");
+    }
+
+    void update() {
+        Matrix4f viewMatrix = camera.getViewMatrix();
+        shaderProgram.setUniform("model", new Matrix4f().translate(0f, 0.0f, -2.0f));
+        shaderProgram.setUniform("view", viewMatrix);
+        shaderProgram.setUniform("projection", new Matrix4f().perspective((float) Math.toRadians(camera.getZoom()), qqqWindow.getWidth() / qqqWindow.getHeight(), 0.1f, 100.0f));
+    }
+
+    void render() {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        shaderProgram.use();
+
+        List<Mesh> meshes = model.getMeshes();
+        for (Mesh mesh : meshes) {
+            Material material = mesh.material;
+            shaderProgram.setNglUniform3fv(ambientColorUniform, 1, material.mAmbientColor.address());
+            shaderProgram.setNglUniform3fv(diffuseColorUniform, 1, material.mDiffuseColor.address());
+            shaderProgram.setNglUniform3fv(specularColorUniform, 1, material.mSpecularColor.address());
+            mesh.draw(shaderProgram);
+        }
+    }
+
+    void loop() {
+        while (!qqqWindow.isClosing()) {
+            glfwPollEvents();
+            update();
+            render();
+            qqqWindow.update();
+        }
+        GL.setCapabilities(null);
+    }
+
+    void run() {
+        try {
+            init();
+            loop();
+            model.free();
+            if (debugProc != null) {
+                debugProc.free();
+            }
+            qqqWindow.destroy();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        } finally {
+            glfwTerminate();
         }
     }
 
     public static void main(String[] args) {
-        run();
+        new ModelTest().run();
     }
+
 }

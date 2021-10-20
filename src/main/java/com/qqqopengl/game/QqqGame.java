@@ -186,9 +186,7 @@ public class QqqGame {
             float strength = 2.0f;
             Vector2f oldVelocity = ball.velocity;
             ball.velocity.x = INITIAL_BALL_VELOCITY.x * percentage * strength;
-            //Ball->Velocity.y = -Ball->Velocity.y;
-            ball.velocity = new Vector2f().normalize(ball.velocity).mul(oldVelocity.length());
-            // fix sticky paddle
+            ball.velocity = ball.velocity.normalize(new Vector2f()).mul(oldVelocity.length(),new Vector2f());
             ball.velocity.y = -1.0f * Math.abs(ball.velocity.y);
         }
     }

@@ -12,6 +12,17 @@ public class GameObject {
     public boolean destroyed;
     public Texture sprite;
 
+    public GameObject(Vector2f pos, Texture block) {
+        this.position = pos;
+        this.sprite = block;
+        this.size = new Vector2f(10.0f, 10.0f);
+        this.color = new Vector3f(1.0f);
+        this.rotation = 0;
+        this.isSolid = false;
+        this.destroyed = false;
+        this.velocity = new Vector2f(0f);
+    }
+
     public GameObject(Vector2f pos, Vector2f size, Texture block) {
         this.position = pos;
         this.size = size;
@@ -21,6 +32,17 @@ public class GameObject {
         this.isSolid = false;
         this.destroyed = false;
         this.velocity = new Vector2f(0f);
+    }
+
+    public GameObject(Vector2f pos, float rotation, Vector2f velocity, Texture sprite) {
+        this.position = pos;
+        this.size = new Vector2f(10.0f, 10.0f);
+        this.sprite = sprite;
+        this.color = new Vector3f(1.0f);
+        this.rotation = rotation;
+        this.isSolid = false;
+        this.destroyed = false;
+        this.velocity = velocity;
     }
 
     public GameObject(Vector2f pos, Vector2f size, Texture block, Vector3f color) {
@@ -40,6 +62,17 @@ public class GameObject {
         this.velocity = velocity;
         this.color = color;
         this.rotation = 0;
+        this.isSolid = false;
+        this.destroyed = false;
+        this.sprite = sprite;
+    }
+
+    public GameObject(Vector2f pos, Vector2f size, Texture sprite, Vector3f color, Vector2f velocity,float rotation) {
+        this.position = pos;
+        this.size = size;
+        this.velocity = velocity;
+        this.color = color;
+        this.rotation = rotation;
         this.isSolid = false;
         this.destroyed = false;
         this.sprite = sprite;

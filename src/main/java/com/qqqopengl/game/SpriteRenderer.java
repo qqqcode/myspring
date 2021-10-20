@@ -27,7 +27,7 @@ public class SpriteRenderer {
         return quadVAO;
     }
 
-    public void drawSprite(Texture texture, Vector2f position, Vector2f size, float rotate, Vector3f color,int width,int height) {
+    public void drawSprite(Texture texture, Vector2f position, Vector2f size, float rotate, Vector3f color, int width, int height) {
         shaderProgram.use();
 
         Matrix4f projection = new Matrix4f().ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
@@ -39,11 +39,11 @@ public class SpriteRenderer {
         Matrix4f model = new Matrix4f();
         model.translate(new Vector3f(position, 0.0f));
         model.translate(new Vector3f(0.5f * size.x, 0.5f * size.y, 0.0f));
-        model.rotate(rotate,new Vector3f(0.0f, 0.0f, 1.0f));
+        model.rotate(rotate, new Vector3f(0.0f, 0.0f, 1.0f));
         model.translate(new Vector3f(-0.5f * size.x, -0.5f * size.y, 0.0f));
         model.scale(new Vector3f(size, 1.0f));
-        shaderProgram.setUniform("model",model);
-        shaderProgram.setUniform("spriteColor",color);
+        shaderProgram.setUniform("model", model);
+        shaderProgram.setUniform("spriteColor", color);
 
         glBindVertexArray(quadVAO.getID());
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -63,11 +63,11 @@ public class SpriteRenderer {
         Matrix4f model = new Matrix4f();
         model.translate(new Vector3f(position, 0.0f));
         model.translate(new Vector3f(0.5f * size.x, 0.5f * size.y, 0.0f));
-        model.rotate(rotate,new Vector3f(0.0f, 0.0f, 1.0f));
+        model.rotate(rotate, new Vector3f(0.0f, 0.0f, 1.0f));
         model.translate(new Vector3f(-0.5f * size.x, -0.5f * size.y, 0.0f));
         model.scale(new Vector3f(size, 1.0f));
-        shaderProgram.setUniform("model",model);
-        shaderProgram.setUniform("spriteColor",color);
+        shaderProgram.setUniform("model", model);
+        shaderProgram.setUniform("spriteColor", color);
 
         glBindVertexArray(quadVAO.getID());
         glDrawArrays(GL_TRIANGLES, 0, 6);

@@ -2,6 +2,7 @@ package com.qqqopengl.test;
 
 import com.qqqopengl.game.QqqGame;
 import com.qqqopengl.graphic.*;
+import com.qqqopengl.listener.KeyListener;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 import java.io.IOException;
@@ -23,14 +24,6 @@ public class GameTest {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
         QqqWindow qqqWindow = new QqqWindow("qqq", SCREEN_WIDTH, SCREEN_HEIGHT, true);
-        qqqWindow.setKeyCallback((window, key, scancode, action, mods) -> {
-            if (action != GLFW_RELEASE) {
-                return;
-            }
-            if (key == GLFW_KEY_ESCAPE) {
-                glfwSetWindowShouldClose(window, true);
-            }
-        });
         QqqGame breakout = new QqqGame(SCREEN_WIDTH, SCREEN_HEIGHT);
         breakout.setState(QqqGame.GameState.GAME_ACTIVE);
         breakout.init();
@@ -48,9 +41,9 @@ public class GameTest {
             lastFrame = currentFrame;
             glfwPollEvents();
 
-            breakout.ProcessInput(deltaTime);
+            breakout.processInput(deltaTime,qqqWindow);
 
-            breakout.Update(deltaTime);
+            breakout.update(deltaTime);
             breakout.render();
 
             qqqWindow.update();

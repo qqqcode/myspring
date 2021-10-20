@@ -22,7 +22,7 @@ public class GameLevel {
         List<List<Integer>> tileData = new ArrayList<>();
         BufferedReader buffer = new BufferedReader(new FileReader(file));
         String s = "";
-        while ((s=buffer.readLine()) != null) {
+        while ((s = buffer.readLine()) != null) {
             String[] nums = s.split(" ");
             List<Integer> lineData = new ArrayList<>();
             for (String num : nums) {
@@ -36,7 +36,7 @@ public class GameLevel {
             return;
         }
 
-        init(tileData,levelWidth,levelHeight);
+        init(tileData, levelWidth, levelHeight);
     }
 
     void draw(SpriteRenderer renderer) {
@@ -48,7 +48,7 @@ public class GameLevel {
 
     boolean isCompleted() {
         for (GameObject brick : this.bricks) {
-            if (!brick.isSolid&&!brick.destroyed) return false;
+            if (!brick.isSolid && !brick.destroyed) return false;
         }
         return true;
     }
@@ -62,21 +62,21 @@ public class GameLevel {
             for (int j = 0; j < width; j++) {
                 Integer data = tileData.get(i).get(j);
                 if (data.equals(1)) {
-                    Vector2f pos = new Vector2f(unitWidth*j,unitHeight*i);
-                    Vector2f size = new Vector2f(unitWidth,unitHeight);
+                    Vector2f pos = new Vector2f(unitWidth * j, unitHeight * i);
+                    Vector2f size = new Vector2f(unitWidth, unitHeight);
                     this.bricks.add(new GameObject(pos, size, ResourceManager.getTexture("block_solid"), new Vector3f(0.8f, 0.8f, 0.7f)));
                 } else if (data.compareTo(1) > 0) {
-                    Vector3f color=  new Vector3f(1.0f);
-                    if (data == 2)
+                    Vector3f color = new Vector3f(1.0f);
+                    if (data == 2){
                         color = new Vector3f(0.2f, 0.6f, 1.0f);
-                    else if (data == 3)
+                    } else if (data == 3) {
                         color = new Vector3f(0.0f, 0.7f, 0.0f);
-                    else if (data == 4)
+                    } else if (data == 4) {
                         color = new Vector3f(0.8f, 0.8f, 0.4f);
-                    else if (data == 5)
+                    } else if (data == 5) {
                         color = new Vector3f(1.0f, 0.5f, 0.0f);
-
-                    Vector2f pos = new Vector2f(unitWidth * i, unitHeight * j);
+                    }
+                    Vector2f pos = new Vector2f(unitWidth * j, unitHeight * i);
                     Vector2f size = new Vector2f(unitWidth, unitHeight);
                     this.bricks.add(new GameObject(pos, size, ResourceManager.getTexture("block"), color));
                 }

@@ -36,12 +36,13 @@ public class QqqGame {
     SpriteRenderer renderer;
     GameObject player;
     BallObject ball;
+    ParticleGenerator particle;
     List<GameLevel> levels;
     int level = 0;
     Vector2f PLAYER_SIZE = new Vector2f(100.0f, 20.0f);
     float PLAYER_VELOCITY = 500.0f;
 
-    Vector2f INITIAL_BALL_VELOCITY = new Vector2f(10.0f, -35.0f);
+    Vector2f INITIAL_BALL_VELOCITY = new Vector2f(100.0f, -350.0f);
     float BALL_RADIUS = 12.5f;
 
     public GameState getState() {
@@ -59,8 +60,11 @@ public class QqqGame {
 
     public void init() throws IOException {
         ResourceManager.loadShader(Constant.resources + "sprite.vert", Constant.resources + "sprite.frag", "sprite");
+
+        ResourceManager.loadShader(Constant.resources + "particle.vert",Constant.resources + "particle.frag","particle");
         renderer = new SpriteRenderer(ResourceManager.getShader("sprite"));
 
+        ResourceManager.loadTexture(Constant.resources + "textures/particle.png", "particle");
         ResourceManager.loadTexture(Constant.resources + "textures/background.jpg", "background");
         ResourceManager.loadTexture(Constant.resources + "textures/awesomeface.png", "face");
         ResourceManager.loadTexture(Constant.resources + "textures/block.png", "block");
@@ -88,6 +92,12 @@ public class QqqGame {
 
         Vector2f ballPos = playerPos.add(new Vector2f(PLAYER_SIZE.x / 2.0f - BALL_RADIUS, -BALL_RADIUS * 2.0f), new Vector2f());
         ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager.getTexture("face"));
+
+        ResourceManager.getShader("particle").use();
+        Matrix4f projection = new Matrix4f().ortho(0.0f, 800, 600, 0.0f, -1.0f, 1.0f);
+        ResourceManager.getShader("particle").setUniform("sprite", 0);
+        ResourceManager.getShader("particle").setUniform("projection", projection);
+        particle = new ParticleGenerator(ResourceManager.getShader("particle"), ResourceManager.getTexture("particle"), 500);
     }
 
     public void processInput(float dt, QqqWindow qqqWindow) {
@@ -97,7 +107,7 @@ public class QqqGame {
                 if (player.position.x >= 0.0f) {
                     player.position.x -= velocity;
                     if (ball.stuck){
-                        //ball.position.x -= velocity;
+                        ball.position.x -= velocity;
                     }
                 }
             }
@@ -105,7 +115,7 @@ public class QqqGame {
                 if (player.position.x <= this.width - player.size.x) {
                     player.position.x += velocity;
                     if (ball.stuck){
-                        //ball.position.x += velocity;
+                        ball.position.x += velocity;
                     }
                 }
             }
@@ -119,12 +129,13 @@ public class QqqGame {
     }
 
     public void update(float dt) throws IOException {
-        ball.move(dt, this.width);
+//        ball.move(dt, this.width);
         this.doCollisions();
         if (ball.position.y >= this.height) {
             this.resetLevel();
             this.resetPlayer();
         }
+        particle.update(dt, ball, 2, new Vector2f(ball.radius / 2.0f));
     }
 
     void resetLevel() throws IOException {
@@ -250,6 +261,9 @@ public class QqqGame {
             this.levels.get(this.level).draw(renderer);
             // draw player
             player.draw(renderer);
+
+            particle.draw();
+
             ball.draw(renderer);
         }
     }

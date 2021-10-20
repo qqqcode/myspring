@@ -153,7 +153,17 @@ public class ShaderProgram {
         setUniform(uniformLocation,value);
     }
 
+    public void setUniform(CharSequence name, Vector4f value) {
+        int uniformLocation = getUniformLocation(name);
+        setUniform(uniformLocation,value);
+    }
+
     public void setUniform(CharSequence name, Vector3f value) {
+        int uniformLocation = getUniformLocation(name);
+        setUniform(uniformLocation,value);
+    }
+
+    public void setUniform(CharSequence name, Vector2f value) {
         int uniformLocation = getUniformLocation(name);
         setUniform(uniformLocation,value);
     }

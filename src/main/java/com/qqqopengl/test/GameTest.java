@@ -2,14 +2,12 @@ package com.qqqopengl.test;
 
 import com.qqqopengl.game.QqqGame;
 import com.qqqopengl.graphic.*;
-import com.qqqopengl.listener.KeyListener;
 import org.lwjgl.glfw.GLFWErrorCallback;
 
 import java.io.IOException;
 
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 
 public class GameTest {
 
@@ -24,18 +22,21 @@ public class GameTest {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
         QqqWindow qqqWindow = new QqqWindow("qqq", SCREEN_WIDTH, SCREEN_HEIGHT, true);
+
+        glEnable(GL_CULL_FACE);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
         QqqGame breakout = new QqqGame(SCREEN_WIDTH, SCREEN_HEIGHT);
         breakout.setState(QqqGame.GameState.GAME_ACTIVE);
         breakout.init();
 
         float deltaTime = 0.0f;
         float lastFrame = 0.0f;
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
+
 
         while (!qqqWindow.isClosing()) {
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+
             float currentFrame = (float) glfwGetTime();
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
@@ -44,6 +45,9 @@ public class GameTest {
             breakout.processInput(deltaTime,qqqWindow);
 
             breakout.update(deltaTime);
+
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
             breakout.render();
 
             qqqWindow.update();

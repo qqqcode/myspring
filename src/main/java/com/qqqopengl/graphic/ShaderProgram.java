@@ -103,6 +103,14 @@ public class ShaderProgram {
         glUniform3fv(location, value);
     }
 
+    public void setUniform2f(int location, FloatBuffer value) {
+        glUniform2fv(location, value);
+    }
+
+    public void setUniform1f(int location, FloatBuffer value) {
+        glUniform1fv(location, value);
+    }
+
     public void setUniform(int location, Vector4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(4);

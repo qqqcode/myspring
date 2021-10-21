@@ -22,6 +22,13 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class ParticleGenerator {
 
+    private ShaderProgram shader;
+    private Texture texture;
+    private VertexArrayObject VAO;
+    private List<Particle> particles;
+    private int amount;
+    public int lastUsedParticle = 0;
+
     public ParticleGenerator(ShaderProgram shader, Texture texture, int amount) {
         this.shader = shader;
         this.texture = texture;
@@ -51,37 +58,25 @@ public class ParticleGenerator {
 
     void draw() {
 
-
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
         this.shader.use();
-//        Matrix4f projection = new Matrix4f().ortho(0.0f, 800, 600, 0.0f, -1.0f, 1.0f);
-//        this.shader.setUniform("sprite", 0);
-//        this.shader.setUniform("projection", projection);
-
-
-        glActiveTexture(GL_TEXTURE0);
-
         for (Particle particle : this.particles) {
             if (particle.life > 0.0f) {
-                        glBlendFunc(GL_SRC_ALPHA,GL_ONE);
                 this.shader.setUniform("offset", particle.position);
                 this.shader.setUniform("color", particle.color);
-                this.VAO.bind();
+
                 texture.bind();
+                glActiveTexture(GL_TEXTURE0);
+
+                this.VAO.bind();
                 glDrawArrays(GL_TRIANGLES, 0, 6);
                 glBindVertexArray(0);
-                        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
             }
         }
-
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     }
-
-    private List<Particle> particles;
-    private int amount;
-    private ShaderProgram shader;
-    private Texture texture;
-    private VertexArrayObject VAO;
-    public int lastUsedParticle = 0;
 
     void init() {
         VAO = new VertexArrayObject();
@@ -138,8 +133,8 @@ public class ParticleGenerator {
     }
 
     void respawnParticle(Particle particle, GameObject object, Vector2f offset) {
-        float random = (float) (((Math.random() % 100) - 50) / 10.0f);
-        float rColor = (float) (0.5f + ((Math.random() % 100) / 100.0f));
+        float random = (float) ((Math.random() * 10) - 5);
+        float rColor = (float) (0.5f + Math.random());
         particle.position = object.position.add(new Vector2f(random), new Vector2f()).add(new Vector2f(offset), new Vector2f());
         particle.color = new Vector4f(rColor, rColor, rColor, 1.0f);
         particle.life = 1.0f;

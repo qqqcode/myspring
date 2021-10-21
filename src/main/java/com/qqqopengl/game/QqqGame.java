@@ -34,16 +34,20 @@ public class QqqGame {
     public GameState state;
     int width, height;
     SpriteRenderer renderer;
-    GameObject player;
-    BallObject ball;
-    ParticleGenerator particle;
     List<GameLevel> levels;
-    int level = 0;
+    int level;
     Vector2f PLAYER_SIZE = new Vector2f(100.0f, 20.0f);
     float PLAYER_VELOCITY = 500.0f;
 
-    Vector2f INITIAL_BALL_VELOCITY = new Vector2f(100.0f, -350.0f);
+    Vector2f INITIAL_BALL_VELOCITY = new Vector2f(100.0f, -300.0f);
     float BALL_RADIUS = 12.5f;
+
+    float shakeTime = 0.0f;
+
+    GameObject player;
+    BallObject ball;
+    ParticleGenerator particle;
+    PostProcessor effects;
 
     public GameState getState() {
         return state;
@@ -61,8 +65,19 @@ public class QqqGame {
     public void init() throws IOException {
         ResourceManager.loadShader(Constant.resources + "sprite.vert", Constant.resources + "sprite.frag", "sprite");
 
-        ResourceManager.loadShader(Constant.resources + "particle.vert",Constant.resources + "particle.frag","particle");
-        renderer = new SpriteRenderer(ResourceManager.getShader("sprite"));
+        ResourceManager.loadShader(Constant.resources + "particle.vert", Constant.resources + "particle.frag", "particle");
+
+        ResourceManager.loadShader(Constant.resources + "post_processing.vert", Constant.resources + "post_processing.frag", "postprocessing");
+
+        Matrix4f projection = new Matrix4f().ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
+
+        ResourceManager.getShader("sprite").use();
+        ResourceManager.getShader("sprite").setUniform("image", 0);
+        ResourceManager.getShader("sprite").setUniform("projection", projection);
+        ResourceManager.getShader("particle").use();
+        ResourceManager.getShader("particle").setUniform("sprite", 0);
+        ResourceManager.getShader("particle").setUniform("projection", projection);
+
 
         ResourceManager.loadTexture(Constant.resources + "textures/particle.png", "particle");
         ResourceManager.loadTexture(Constant.resources + "textures/background.jpg", "background");
@@ -70,6 +85,10 @@ public class QqqGame {
         ResourceManager.loadTexture(Constant.resources + "textures/block.png", "block");
         ResourceManager.loadTexture(Constant.resources + "textures/block_solid.png", "block_solid");
         ResourceManager.loadTexture(Constant.resources + "textures/paddle.png", "paddle");
+
+        renderer = new SpriteRenderer(ResourceManager.getShader("sprite"));
+        particle = new ParticleGenerator(ResourceManager.getShader("particle"), ResourceManager.getTexture("particle"), 500);
+        effects = new PostProcessor(ResourceManager.getShader("postprocessing"), this.width, this.height);
 
         GameLevel gameLevelOne = new GameLevel();
         gameLevelOne.load(Constant.resources + "levels/one.lvl", this.width, this.height / 2);
@@ -80,12 +99,12 @@ public class QqqGame {
         GameLevel gameLevelFour = new GameLevel();
         gameLevelFour.load(Constant.resources + "levels/four.lvl", this.width, this.height / 2);
 
-        levels = new ArrayList<>();
-        levels.add(gameLevelOne);
-        levels.add(gameLevelTwo);
-        levels.add(gameLevelThree);
-        levels.add(gameLevelFour);
-
+        this.levels = new ArrayList<>();
+        this.levels.add(gameLevelOne);
+        this.levels.add(gameLevelTwo);
+        this.levels.add(gameLevelThree);
+        this.levels.add(gameLevelFour);
+        this.level = 0;
         Vector2f playerPos = new Vector2f(this.width / 2.0f - PLAYER_SIZE.x / 2.0f, this.height - PLAYER_SIZE.y);
         player = new GameObject(playerPos, PLAYER_SIZE, ResourceManager.getTexture("paddle"));
         this.state = GameState.GAME_ACTIVE;
@@ -93,11 +112,6 @@ public class QqqGame {
         Vector2f ballPos = playerPos.add(new Vector2f(PLAYER_SIZE.x / 2.0f - BALL_RADIUS, -BALL_RADIUS * 2.0f), new Vector2f());
         ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager.getTexture("face"));
 
-        ResourceManager.getShader("particle").use();
-        Matrix4f projection = new Matrix4f().ortho(0.0f, 800, 600, 0.0f, -1.0f, 1.0f);
-        ResourceManager.getShader("particle").setUniform("sprite", 0);
-        ResourceManager.getShader("particle").setUniform("projection", projection);
-        particle = new ParticleGenerator(ResourceManager.getShader("particle"), ResourceManager.getTexture("particle"), 500);
     }
 
     public void processInput(float dt, QqqWindow qqqWindow) {
@@ -106,7 +120,7 @@ public class QqqGame {
             if (KeyListener.isKeyPressed(GLFW_KEY_A)) {
                 if (player.position.x >= 0.0f) {
                     player.position.x -= velocity;
-                    if (ball.stuck){
+                    if (ball.stuck) {
                         ball.position.x -= velocity;
                     }
                 }
@@ -114,7 +128,7 @@ public class QqqGame {
             if (KeyListener.isKeyPressed(GLFW_KEY_D)) {
                 if (player.position.x <= this.width - player.size.x) {
                     player.position.x += velocity;
-                    if (ball.stuck){
+                    if (ball.stuck) {
                         ball.position.x += velocity;
                     }
                 }
@@ -129,24 +143,29 @@ public class QqqGame {
     }
 
     public void update(float dt) throws IOException {
-//        ball.move(dt, this.width);
+        ball.move(dt, this.width);
         this.doCollisions();
         if (ball.position.y >= this.height) {
             this.resetLevel();
             this.resetPlayer();
         }
         particle.update(dt, ball, 2, new Vector2f(ball.radius / 2.0f));
+        if (shakeTime > 0.0f) {
+            shakeTime -= dt;
+            if (shakeTime <= 0.0f)
+                effects.shake = false;
+        }
     }
 
     void resetLevel() throws IOException {
         if (this.level == 0) {
-            this.levels.get(0).load(Constant.resources +"levels/one.lvl", this.width, this.height / 2);
+            this.levels.get(0).load(Constant.resources + "levels/one.lvl", this.width, this.height / 2);
         } else if (this.level == 1) {
-            this.levels.get(1).load(Constant.resources +"levels/two.lvl", this.width, this.height / 2);
+            this.levels.get(1).load(Constant.resources + "levels/two.lvl", this.width, this.height / 2);
         } else if (this.level == 2) {
-            this.levels.get(2).load(Constant.resources +"levels/three.lvl", this.width, this.height / 2);
+            this.levels.get(2).load(Constant.resources + "levels/three.lvl", this.width, this.height / 2);
         } else if (this.level == 3) {
-            this.levels.get(3).load(Constant.resources +"levels/four.lvl", this.width, this.height / 2);
+            this.levels.get(3).load(Constant.resources + "levels/four.lvl", this.width, this.height / 2);
         }
     }
 
@@ -197,7 +216,7 @@ public class QqqGame {
             float strength = 2.0f;
             Vector2f oldVelocity = ball.velocity;
             ball.velocity.x = INITIAL_BALL_VELOCITY.x * percentage * strength;
-            ball.velocity = ball.velocity.normalize(new Vector2f()).mul(oldVelocity.length(),new Vector2f());
+            ball.velocity = ball.velocity.normalize(new Vector2f()).mul(oldVelocity.length(), new Vector2f());
             ball.velocity.y = -1.0f * Math.abs(ball.velocity.y);
         }
     }
@@ -255,16 +274,17 @@ public class QqqGame {
     public void render() {
         if (this.state == GameState.GAME_ACTIVE) {
 
-            renderer.drawSprite(ResourceManager.getTexture("background"), new Vector2f(0.0f, 0.0f), new Vector2f(this.width, this.height), 0.0f, new Vector3f(1), width, height);
+            effects.beginRender();
+
+            renderer.drawSprite(ResourceManager.getTexture("background"), new Vector2f(0.0f, 0.0f), new Vector2f(this.width, this.height), 0.0f, new Vector3f(1));
             //renderer.drawSprite(ResourceManager.getTexture("face"), new Vector2f(200, 200), new Vector2f(300, 400), 45.0f, new Vector3f(0.0f, 1.0f, 0.0f), width, height);
-            // draw level
             this.levels.get(this.level).draw(renderer);
-            // draw player
             player.draw(renderer);
-
             particle.draw();
-
             ball.draw(renderer);
+
+            effects.endRender();
+            effects.render((float) glfwGetTime());
         }
     }
 }

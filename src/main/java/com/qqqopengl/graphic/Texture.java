@@ -28,6 +28,10 @@ public class Texture {
         id = glGenTextures();
     }
 
+    public int getId() {
+        return id;
+    }
+
     /**
      * Binds the texture.
      */

@@ -28,5 +28,12 @@ public class RenderBufferObject {
 
     public void framebufferRenderbuffer () {
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, id);
+        checkFramebufferStatus();
+    }
+
+    public void checkFramebufferStatus () {
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) {
+            System.out.println("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+        }
     }
 }

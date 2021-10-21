@@ -14,12 +14,12 @@ public class FrameBufferObject {
         id = glGenFramebuffers();
     }
 
-    public void bind(int target) {
-        glBindFramebuffer(target, id);
+    public void bind() {
+        glBindFramebuffer(GL_FRAMEBUFFER, id);
     }
 
-    public void unbind(int target) {
-        glBindFramebuffer(target, 0);
+    public void unbind() {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     public void framebufferTexture2D (int width,int height) {
@@ -30,6 +30,12 @@ public class FrameBufferObject {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
     }
+
+    public void framebufferTexture2D (Texture texture,int width,int height) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
+    }
+
+
 
     public void delete() {
         glDeleteFramebuffers(id);

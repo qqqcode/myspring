@@ -7,6 +7,7 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_CLAMP_TO_BORDER;
+import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.stb.STBImage.*;
 
 public class Texture {
@@ -37,6 +38,10 @@ public class Texture {
      */
     public void bind() {
         glBindTexture(GL_TEXTURE_2D, id);
+    }
+
+    public void unbind() {
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     /**
@@ -72,6 +77,10 @@ public class Texture {
      */
     public void uploadData(int internalFormat, int width, int height, int format, ByteBuffer data) {
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+    }
+
+    public void uploadData(int internalFormat, int width, int height, int format,int type, ByteBuffer data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, data);
     }
 
     /**
@@ -181,6 +190,31 @@ public class Texture {
         }
 
         return createTexture(width, height, image);
+    }
+
+    public static Texture generateAttachmentTexture(boolean depth, boolean stencil ,int width,int height) {
+
+        int attachment_type = GL_RGB;
+        if(!depth && !stencil) {
+            attachment_type = GL_RGB;
+        }
+        else if(depth && !stencil) {
+            attachment_type = GL_DEPTH_COMPONENT;
+        } else if(!depth && stencil) {
+            attachment_type = GL_STENCIL_INDEX;
+        }
+
+        Texture texture = new Texture();
+        texture.bind();
+        if(!depth && !stencil){
+            texture.uploadData(attachment_type,width,height,attachment_type,GL_UNSIGNED_BYTE,null);
+        } else {
+            texture.uploadData(GL_DEPTH24_STENCIL8, width, height,GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8,null);
+        }
+        texture.setParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        texture.setParameter(GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        texture.unbind();
+        return texture;
     }
 
 }

@@ -147,15 +147,15 @@ public class Texture {
      *
      * @return Texture from the specified data
      */
-    public static Texture createTexture(int width, int height, ByteBuffer data) {
+    public static Texture createTexture(int width, int height, ByteBuffer data,boolean tile) {
         Texture texture = new Texture();
         texture.setWidth(width);
         texture.setHeight(height);
 
         texture.bind();
 
-        texture.setParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        texture.setParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        texture.setParameter(GL_TEXTURE_WRAP_S, tile ? GL_REPEAT : GL_CLAMP_TO_BORDER);
+        texture.setParameter(GL_TEXTURE_WRAP_T, tile ? GL_REPEAT : GL_CLAMP_TO_BORDER);
         texture.setParameter(GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         texture.setParameter(GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -172,6 +172,10 @@ public class Texture {
      * @return Texture from specified file
      */
     public static Texture loadTexture(String path) {
+        return loadTexture(path,false);
+    }
+
+    public static Texture loadTexture(String path,boolean tile) {
         ByteBuffer image;
         int width, height;
         try (MemoryStack stack = MemoryStack.stackPush()) {
@@ -189,7 +193,7 @@ public class Texture {
             height = h.get();
         }
 
-        return createTexture(width, height, image);
+        return createTexture(width, height, image,tile);
     }
 
     public static Texture generateAttachmentTexture(boolean depth, boolean stencil ,int width,int height) {

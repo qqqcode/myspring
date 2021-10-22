@@ -14,7 +14,7 @@ public class RenderBufferObject {
         glBindRenderbuffer(GL_RENDERBUFFER, id);
     }
 
-    public void unbind() {
+    public static void unbind() {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
@@ -26,8 +26,8 @@ public class RenderBufferObject {
         glRenderbufferStorageMultisample(GL_RENDERBUFFER, sample, GL_RGB, width, height);
     }
 
-    public void framebufferRenderbuffer () {
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, id);
+    public void framebufferRenderbuffer (int attachment) {
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, attachment, GL_RENDERBUFFER, id);
         checkFramebufferStatus();
     }
 

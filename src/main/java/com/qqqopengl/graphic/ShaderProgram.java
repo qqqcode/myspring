@@ -5,6 +5,7 @@ import org.joml.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -111,6 +112,10 @@ public class ShaderProgram {
         glUniform1fv(location, value);
     }
 
+    public void setUniform1iv(int location, IntBuffer intBuffer) {
+        glUniform1iv(location,intBuffer);
+    }
+
     public void setUniform(int location, Vector4f value) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(4);
@@ -195,6 +200,12 @@ public class ShaderProgram {
         int location = getUniformLocation(name);
         glUniformMatrix3fv(location, false, value);
     }
+
+    public void setUniform1iv(CharSequence name , IntBuffer intBuffer) {
+        int location = getUniformLocation(name);
+        setUniform1iv(location,intBuffer);
+    }
+
     /**
      * Use this shader program.
      */

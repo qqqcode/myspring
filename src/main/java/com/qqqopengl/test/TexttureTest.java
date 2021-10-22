@@ -3,6 +3,7 @@ package com.qqqopengl.test;
 import com.qqqopengl.graphic.ShaderProgram;
 import com.qqqopengl.graphic.*;
 import com.qqqopengl.util.Constant;
+import com.qqqopengl.util.ShaderUtil;
 import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.system.MemoryStack;
@@ -33,15 +34,9 @@ public class TexttureTest {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
-        QqqWindow qqq = new QqqWindow("qqq", 1600, 1200, true);
+        QqqWindow qqq = new QqqWindow("qqq", 800, 600, true);
 
-        Shader vertexShader = Shader.loadShader(GL_VERTEX_SHADER, "/resources/textture1.vert");
-        Shader fragmentShader = Shader.loadShader(GL_FRAGMENT_SHADER, "/resources/textture1.frag");
-
-        ShaderProgram shaderProgram = new ShaderProgram();
-        shaderProgram.attachShader(vertexShader);
-        shaderProgram.attachShader(fragmentShader);
-        shaderProgram.link();
+        ShaderProgram shaderProgram =  ShaderUtil.createShaderProgram(Constant.resources + "textture1.vert",Constant.resources + "textture1.frag");
 
         VertexArrayObject vao = new VertexArrayObject();
         vao.bind();
@@ -127,9 +122,6 @@ public class TexttureTest {
 
             qqq.update();
         }
-
-        vertexShader.delete();
-        fragmentShader.delete();
         vao.delete();
         vbo.delete();
         ebo.delete();

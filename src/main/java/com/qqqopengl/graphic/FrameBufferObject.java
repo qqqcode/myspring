@@ -1,7 +1,5 @@
 package com.qqqopengl.graphic;
 
-import static org.lwjgl.opengl.GL15.glBindBuffer;
-import static org.lwjgl.opengl.GL15.glGenBuffers;
 import static org.lwjgl.opengl.GL30.*;
 
 public class FrameBufferObject {
@@ -18,7 +16,7 @@ public class FrameBufferObject {
         glBindFramebuffer(GL_FRAMEBUFFER, id);
     }
 
-    public void unbind() {
+    public static void unbind() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
@@ -33,6 +31,13 @@ public class FrameBufferObject {
 
     public void framebufferTexture2D (Texture texture,int width,int height) {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.getId(), 0);
+        checkFramebufferStatus();
+    }
+
+    public void checkFramebufferStatus () {
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) {
+            System.out.println("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+        }
     }
 
 

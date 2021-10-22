@@ -39,7 +39,7 @@ public class QqqGame {
     Vector2f PLAYER_SIZE = new Vector2f(100.0f, 20.0f);
     float PLAYER_VELOCITY = 500.0f;
 
-    Vector2f INITIAL_BALL_VELOCITY = new Vector2f(100.0f, -300.0f);
+    Vector2f INITIAL_BALL_VELOCITY = new Vector2f(100.0f, -200.0f);
     float BALL_RADIUS = 12.5f;
 
     float shakeTime = 0.0f;
@@ -274,7 +274,7 @@ public class QqqGame {
     public void render() {
         if (this.state == GameState.GAME_ACTIVE) {
 
-//            effects.beginRender();
+            effects.beginRender();
 
             renderer.drawSprite(ResourceManager.getTexture("background"), new Vector2f(0.0f, 0.0f), new Vector2f(this.width, this.height), 0.0f, new Vector3f(1));
             //renderer.drawSprite(ResourceManager.getTexture("face"), new Vector2f(200, 200), new Vector2f(300, 400), 45.0f, new Vector3f(0.0f, 1.0f, 0.0f), width, height);
@@ -283,8 +283,8 @@ public class QqqGame {
             particle.draw();
             ball.draw(renderer);
 
-//            effects.endRender();
-//            effects.render((float) glfwGetTime());
+            effects.endRender();
+            effects.render((float) glfwGetTime());
         }
     }
 }

@@ -21,8 +21,8 @@ import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class FramebuffersTest {
 
-    public static int SCR_WIDTH = 1440;
-    public static int SCR_HEIGHT = 900;
+    public static int SCR_WIDTH = 800;
+    public static int SCR_HEIGHT = 600;
 
     public static void fun() {
 
@@ -34,8 +34,8 @@ public class FramebuffersTest {
         }
 
         QqqWindow qqq = new QqqWindow("qqqlight", SCR_WIDTH, SCR_HEIGHT, true);
-        Camera camera = new Camera(0f, 0.0f, 3.0f);
         glDepthFunc(GL_LESS);
+
 
         ShaderProgram program = ShaderUtil.createShaderProgram(Constant.resources + "vs/advanced.vs",
                 Constant.resources + "frag/advanced.frag");
@@ -112,17 +112,17 @@ public class FramebuffersTest {
         VertexBufferObject cubeVBO = new VertexBufferObject();
 
         cubeVAO.bind();
-        cubeVBO.bind(GL_ARRAY_BUFFER);
         try (MemoryStack stack = stackPush()) {
             FloatBuffer floatBuffer = stack.mallocFloat(5 * 6 * 6);
             floatBuffer.put(cubeVertices);
             floatBuffer.flip();
-            cubeVBO.uploadData(GL_ARRAY_BUFFER,floatBuffer,GL_STATIC_DRAW);
+            cubeVBO.bind(GL_ARRAY_BUFFER);
+            cubeVBO.uploadData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
         }
-        glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
-        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(0);
         glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+        glEnableVertexAttribArray(1);
         cubeVAO.unbind();
 
         VertexArrayObject floorVAO = new VertexArrayObject();
@@ -134,7 +134,7 @@ public class FramebuffersTest {
             FloatBuffer floatBuffer = stack.mallocFloat(5 * 6);
             floatBuffer.put(floorVertices);
             floatBuffer.flip();
-            cubeVBO.uploadData(GL_ARRAY_BUFFER,floatBuffer,GL_STATIC_DRAW);
+            cubeVBO.uploadData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
         }
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
@@ -153,14 +153,14 @@ public class FramebuffersTest {
             floatBuffer.flip();
             quadVBO.uploadData(GL_ARRAY_BUFFER,floatBuffer,GL_STATIC_DRAW);
         }
-        glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 2, GL_FLOAT, false, 4 * Float.BYTES, 0);
-        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(0);
         glVertexAttribPointer(1, 2, GL_FLOAT, false, 4 * Float.BYTES, 2 * Float.BYTES);
+        glEnableVertexAttribArray(1);
         quadVAO.unbind();
 
         Texture cubeTexture = Texture.loadTexture(Constant.resources + "container.jpg");
-        Texture floorTexture = Texture.loadTexture(Constant.resources + "container.jpg");
+        Texture floorTexture = Texture.loadTexture(Constant.resources + "img.png", true);
 
         FrameBufferObject frameBuffer = new FrameBufferObject();
         frameBuffer.bind();
@@ -171,7 +171,7 @@ public class FramebuffersTest {
         rbo.bind();
         rbo.storage(SCR_WIDTH,SCR_HEIGHT);
         rbo.unbind();
-        rbo.framebufferRenderbuffer();
+        rbo.framebufferRenderbuffer(GL_DEPTH_STENCIL_ATTACHMENT);
         frameBuffer.unbind();
 
         while (!qqq.isClosing()) {
@@ -180,32 +180,30 @@ public class FramebuffersTest {
             frameBuffer.bind();
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // We're not using stencil buffer so why bother with clearing?
-
             glEnable(GL_DEPTH_TEST);
-            // Set uniforms
             program.use();
-            Matrix4f model = new Matrix4f();
-            Matrix4f view = camera.getViewMatrix();
-            Matrix4f projection = new Matrix4f().perspective((float) Math.toRadians(camera.getZoom()), qqq.getWidth() / qqq.getHeight(), 0.1f, 100.0f);
-            program.setUniform("view",view);
-            program.setUniform("projection",projection);
+
+            Matrix4f view = new Matrix4f().translate(new Vector3f(0.0f, -2.0f, -6.0f));
+            Matrix4f projection = new Matrix4f().perspective(45.0f, qqq.getWidth() / qqq.getHeight(), 0.1f, 100.0f);
+
+            // Set uniforms
+            program.setUniform("view", view);
+            program.setUniform("projection", projection);
 
             // Floor
             floorVAO.bind();
-            program.setUniform("ourTexture",0);
+            program.setUniform("ourTexture", 0);
             floorTexture.bind();
-            program.setUniform("model",model);
+            program.setUniform("model", new Matrix4f());
             glDrawArrays(GL_TRIANGLES, 0, 6);
             floorVAO.unbind();
             // Cubes
             cubeVAO.bind();
             cubeTexture.bind();
-            model.translate(new Vector3f(-1.0f, 0.0f, -1.0f));
-            program.setUniform("model",model);
+            program.setUniform("model", new Matrix4f().translate(new Vector3f(2.0f, 0.0f, 0.0f)));
             glDrawArrays(GL_TRIANGLES, 0, 36);
-            model = new Matrix4f();
-            model = model.translate(new Vector3f(2.0f, 0.0f, 0.0f));
-            program.setUniform("model",model);
+
+            program.setUniform("model", new Matrix4f().translate(new Vector3f(-1.0f, 0.0f, -1.0f)));
             glDrawArrays(GL_TRIANGLES, 0, 36);
             cubeVAO.unbind();
 
@@ -213,18 +211,18 @@ public class FramebuffersTest {
             // Bind to default framebuffer again and draw the
             // quad plane with attched screen texture.
             // //////////////////////////////////////////////////
-//            frameBuffer.unbind();
-//            // Clear all relevant buffers
-//            glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set clear color to white (not really necessery actually, since we won't be able to see behind the quad anyways)
-//            glClear(GL_COLOR_BUFFER_BIT);
-//            glDisable(GL_DEPTH_TEST); // We don't care about depth information when rendering a single quad
-//
-//            // Draw Screen
-//            screenProgram.use();
-//            quadVAO.bind();
-//            texture.bind();
-//            glDrawArrays(GL_TRIANGLES, 0, 6);
-//            quadVAO.unbind();
+            frameBuffer.unbind();
+            // Clear all relevant buffers
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            glDisable(GL_DEPTH_TEST);
+
+            // Draw Screen
+            screenProgram.use();
+            quadVAO.bind();
+            texture.bind();
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            quadVAO.unbind();
 
             qqq.update();
         }

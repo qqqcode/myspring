@@ -17,6 +17,10 @@ public class VertexBufferObject {
         glBindBuffer(target, id);
     }
 
+    public void unbind() {
+        glBindBuffer(GL_ARRAY_BUFFER,0);
+    }
+
     public void uploadData(int target, FloatBuffer data, int usage) {
         glBufferData(target, data, usage);
     }

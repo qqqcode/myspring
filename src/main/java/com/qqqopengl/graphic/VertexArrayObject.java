@@ -14,7 +14,7 @@ public class VertexArrayObject {
         glBindVertexArray(id);
     }
 
-    public void unbind() {
+    public static void unbind() {
         glBindVertexArray(0);
     }
 

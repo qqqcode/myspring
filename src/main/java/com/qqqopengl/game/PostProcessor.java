@@ -1,20 +1,16 @@
 package com.qqqopengl.game;
 
-import com.qqqopengl.graphic.ShaderProgram;
-import com.qqqopengl.graphic.Texture;
-import com.qqqopengl.graphic.VertexArrayObject;
-import com.qqqopengl.graphic.VertexBufferObject;
+import com.qqqopengl.graphic.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 
 import static org.lwjgl.opengl.GL30.*;
 
 public class PostProcessor {
-    private int MSFBO, FBO;
-    private int RBO;
+    private FrameBufferObject MSFBO,FBO;
+    private RenderBufferObject RBO;
     private VertexArrayObject VAO;
 
 
@@ -28,28 +24,23 @@ public class PostProcessor {
         this.confuse = false;
         this.chaos = false;
         this.shake = false;
-        this.MSFBO = glGenFramebuffers();
-        this.FBO = glGenFramebuffers();
-        this.RBO = glGenRenderbuffers();
+        this.MSFBO = new FrameBufferObject();
+        this.FBO = new FrameBufferObject();
+        this.RBO = new RenderBufferObject();
         this.postProcessingShader = shader;
 
-        glBindFramebuffer(GL_FRAMEBUFFER, this.MSFBO);
-        glBindRenderbuffer(GL_RENDERBUFFER, this.RBO);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_RGB, width, height); // allocate storage for render buffer object
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, this.RBO); // attach MS render buffer object to framebuffer
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            System.out.println("ERROR::POSTPROCESSOR: Failed to initialize MSFBO");
-        }
+        MSFBO.bind();
+        RBO.bind();
+        RBO.storageMultisample(4,width,height);
+        RBO.framebufferRenderbuffer(GL_COLOR_ATTACHMENT0);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, this.FBO);
-        this.texture = Texture.createTexture(width, height, null);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, this.texture.getId(), 0); // attach texture to framebuffer as its color attachment
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            System.out.println("ERROR::POSTPROCESSOR: Failed to initialize FBO");
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        FBO.bind();
+        this.texture = Texture.generateAttachmentTexture(false,false,width, height);
+        FBO.framebufferTexture2D(texture,width,height);
+        FBO.unbind();
 
         this.initRenderData();
+        this.postProcessingShader.use();
         this.postProcessingShader.setUniform("scene", 0);
         float offset = 1.0f / 300.0f;
 
@@ -68,6 +59,7 @@ public class PostProcessor {
             FloatBuffer floatBuffer = stack.mallocFloat(2*9);
             floatBuffer.put(offsets);
             floatBuffer.flip();
+//            this.postProcessingShader.setUniform("offsets",floatBuffer);
             nglUniform2fv(this.postProcessingShader.getUniformLocation("offsets"),9, stack.getAddress());
         }
         int[] edge_kernel = {
@@ -79,7 +71,8 @@ public class PostProcessor {
             IntBuffer intBuffer = stack.mallocInt(3*3);
             intBuffer.put(edge_kernel);
             intBuffer.flip();
-            nglUniform1iv(this.postProcessingShader.getUniformLocation("edge_kernel"),9, stack.getAddress());
+            this.postProcessingShader.setUniform1iv("edge_kernel",intBuffer);
+            //nglUniform1iv(this.postProcessingShader.getUniformLocation("edge_kernel"),9, stack.getAddress());
         }
         //glUniform1iv(this.postProcessingShader.getUniformLocation("edge_kernel"), edge_kernel);
         float[] blur_kernel = {
@@ -97,16 +90,16 @@ public class PostProcessor {
     }
 
     void beginRender() {
-        glBindFramebuffer(GL_FRAMEBUFFER, this.MSFBO);
+        this.MSFBO.bind();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
     void endRender() {
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, this.MSFBO);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, this.FBO);
+        this.MSFBO.bind();
+        this.FBO.bind();
         glBlitFramebuffer(0, 0, this.width, this.height, 0, 0, this.width, this.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        this.FBO.unbind();
     }
 
     void render(float time) {
@@ -120,7 +113,7 @@ public class PostProcessor {
         this.texture.bind();
         VAO.bind();
         glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
+        VAO.unbind();
     }
 
     void initRenderData() {
@@ -144,8 +137,8 @@ public class PostProcessor {
         glVertexAttribPointer(0, 4, GL_FLOAT, false, 4 * Float.BYTES, 0);
         glEnableVertexAttribArray(0);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindVertexArray(0);
+        vbo.unbind();
+        VAO.unbind();
 
     }
 

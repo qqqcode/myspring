@@ -104,8 +104,12 @@ public class ShaderProgram {
         glUniform3fv(location, value);
     }
 
-    public void setUniform2f(int location, FloatBuffer value) {
+    public void setUniform2fv(int location, FloatBuffer value) {
         glUniform2fv(location, value);
+    }
+
+    public void setUniform1fv(int location, FloatBuffer value) {
+        glUniform1fv(location, value);
     }
 
     public void setUniform1f(int location, FloatBuffer value) {
@@ -205,6 +209,18 @@ public class ShaderProgram {
         int location = getUniformLocation(name);
         setUniform1iv(location,intBuffer);
     }
+
+    public void setUniform2fv(CharSequence name , FloatBuffer floatBuffer) {
+        int location = getUniformLocation(name);
+        setUniform2fv(location,floatBuffer);
+    }
+
+    public void setUniform1fv(CharSequence name , FloatBuffer floatBuffer) {
+        int location = getUniformLocation(name);
+        setUniform1fv(location,floatBuffer);
+    }
+
+
 
     /**
      * Use this shader program.

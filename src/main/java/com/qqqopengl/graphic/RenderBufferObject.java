@@ -18,8 +18,8 @@ public class RenderBufferObject {
         glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
-    public void storage(int width, int height) {
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+    public void storage(int attachment,int width, int height) {
+        glRenderbufferStorage(GL_RENDERBUFFER, attachment, width, height);
     }
 
     public void storageMultisample(int sample, int width, int height) {
@@ -33,7 +33,7 @@ public class RenderBufferObject {
 
     public void checkFramebufferStatus () {
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) {
-            System.out.println("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+            System.out.println("ERROR::FRAMEBUFFER::RENDER Framebuffer is not complete!");
         }
     }
 }

@@ -16,6 +16,16 @@ public class FrameBufferObject {
         glBindFramebuffer(GL_FRAMEBUFFER, id);
     }
 
+    public void bindeRead() {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, id);
+    }
+
+    public void bindeDraw() {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, id);
+    }
+
+
+
     public static void unbind() {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
@@ -36,7 +46,7 @@ public class FrameBufferObject {
 
     public void checkFramebufferStatus () {
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) {
-            System.out.println("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
+            System.out.println("ERROR::FRAMEBUFFER::TEXTURE2D Framebuffer is not complete!");
         }
     }
 

@@ -34,7 +34,8 @@ public class FramebuffersTest {
         }
 
         QqqWindow qqq = new QqqWindow("qqqlight", SCR_WIDTH, SCR_HEIGHT, true);
-        glDepthFunc(GL_LESS);
+//        glDepthFunc(GL_LESS);
+//        glEnable(GL_MULTISAMPLE);
 
 
         ShaderProgram program = ShaderUtil.createShaderProgram(Constant.resources + "vs/advanced.vs",
@@ -134,12 +135,12 @@ public class FramebuffersTest {
             FloatBuffer floatBuffer = stack.mallocFloat(5 * 6);
             floatBuffer.put(floorVertices);
             floatBuffer.flip();
-            cubeVBO.uploadData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
+            floorVBO.uploadData(GL_ARRAY_BUFFER, floatBuffer, GL_STATIC_DRAW);
         }
-        glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
-        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(0);
         glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * Float.BYTES, 3 * Float.BYTES);
+        glEnableVertexAttribArray(1);
         floorVAO.unbind();
 
 
@@ -169,7 +170,7 @@ public class FramebuffersTest {
 
         RenderBufferObject rbo = new RenderBufferObject();
         rbo.bind();
-        rbo.storage(SCR_WIDTH,SCR_HEIGHT);
+        rbo.storage(GL_DEPTH24_STENCIL8,SCR_WIDTH,SCR_HEIGHT);
         rbo.unbind();
         rbo.framebufferRenderbuffer(GL_DEPTH_STENCIL_ATTACHMENT);
         frameBuffer.unbind();

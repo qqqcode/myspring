@@ -1,20 +1,29 @@
 package com.qqqopengl.game;
 
-import com.qqqopengl.graphic.QqqWindow;
-import com.qqqopengl.graphic.ShaderProgram;
+import com.qqqopengl.graphic.*;
 import com.qqqopengl.listener.KeyListener;
 import com.qqqopengl.util.Constant;
+import com.qqqopengl.util.ShaderUtil;
 import org.javatuples.Triplet;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.lwjgl.system.MemoryStack;
 
 import java.io.IOException;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.qqqopengl.game.QqqGame.Direction.UP;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
+import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class QqqGame {
 
@@ -69,6 +78,8 @@ public class QqqGame {
 
         ResourceManager.loadShader(Constant.resources + "post_processing.vert", Constant.resources + "post_processing.frag", "postprocessing");
 
+        ResourceManager.loadShader(Constant.resources + "vs/screen.vs", Constant.resources + "frag/screen.frag","screen");
+
         Matrix4f projection = new Matrix4f().ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
 
         ResourceManager.getShader("sprite").use();
@@ -111,7 +122,6 @@ public class QqqGame {
 
         Vector2f ballPos = playerPos.add(new Vector2f(PLAYER_SIZE.x / 2.0f - BALL_RADIUS, -BALL_RADIUS * 2.0f), new Vector2f());
         ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ResourceManager.getTexture("face"));
-
     }
 
     public void processInput(float dt, QqqWindow qqqWindow) {

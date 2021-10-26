@@ -14,13 +14,13 @@ uniform bool shake;
 void main()
 {
     color = vec4(0.0f);
+
     vec3 sample[9];
-    // sample from texture offsets if using convolution matrix
+
     if(chaos || shake)
         for(int i = 0; i < 9; i++)
             sample[i] = vec3(texture(scene, TexCoords.st + offsets[i]));
 
-    // process effects
     if (chaos)
     {
         for(int i = 0; i < 9; i++)

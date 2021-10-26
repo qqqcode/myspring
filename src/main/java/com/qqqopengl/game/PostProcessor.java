@@ -9,7 +9,7 @@ import java.nio.IntBuffer;
 import static org.lwjgl.opengl.GL30.*;
 
 public class PostProcessor {
-    private FrameBufferObject MSFBO, FBO;
+    private FrameBufferObject FBO;
     private RenderBufferObject RBO;
     private VertexArrayObject VAO;
 
@@ -24,19 +24,18 @@ public class PostProcessor {
         this.confuse = false;
         this.chaos = false;
         this.shake = false;
-        this.MSFBO = new FrameBufferObject();
         this.FBO = new FrameBufferObject();
         this.RBO = new RenderBufferObject();
         this.postProcessingShader = shader;
 
-        MSFBO.bind();
-        RBO.bind();
-        RBO.storageMultisample(4, width, height);
-        RBO.framebufferRenderbuffer(GL_COLOR_ATTACHMENT0);
-
         FBO.bind();
         this.texture = Texture.generateAttachmentTexture(false, false, width, height);
         FBO.framebufferTexture2D(texture, width, height);
+
+        RBO.bind();
+        RBO.storage(GL_DEPTH24_STENCIL8,width, height);
+        RBO.unbind();
+        RBO.framebufferRenderbuffer(GL_DEPTH_STENCIL_ATTACHMENT);
         FBO.unbind();
 
         this.initRenderData();
@@ -86,16 +85,15 @@ public class PostProcessor {
     }
 
     void beginRender() {
-        this.MSFBO.bind();
+        this.FBO.bind();
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 
     void endRender() {
-        this.MSFBO.bindeRead();
-        this.FBO.bindeDraw();
-        glBlitFramebuffer(0, 0, this.width, this.height, 0, 0, this.width, this.height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
         this.FBO.unbind();
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
     }
 
     void render(float time) {
@@ -104,6 +102,9 @@ public class PostProcessor {
         this.postProcessingShader.setUniform("confuse", this.confuse ? 1 : 0);
         this.postProcessingShader.setUniform("chaos", this.chaos ? 1 : 0);
         this.postProcessingShader.setUniform("shake", this.shake ? 1 : 0);
+        if (shake) {
+            System.out.println("shaking");
+        }
 
         glActiveTexture(GL_TEXTURE0);
         this.texture.bind();
@@ -117,15 +118,19 @@ public class PostProcessor {
         VertexBufferObject vbo = new VertexBufferObject();
         VAO.bind();
         vbo.bind(GL_ARRAY_BUFFER);
+        float[] quadVertices = {
+                // Positions   // TexCoords
+                -1.0f, 1.0f, 0.0f, 1.0f,
+                -1.0f, -1.0f, 0.0f, 0.0f,
+                1.0f, -1.0f, 1.0f, 0.0f,
+
+                -1.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, -1.0f, 1.0f, 0.0f,
+                1.0f, 1.0f, 1.0f, 1.0f
+        };
         try (MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer verBuf = stack.mallocFloat(4 * 6);
-            verBuf.put(-1f).put(-1.0f).put(0f).put(0f);
-            verBuf.put(1.0f).put(1.0f).put(1.0f).put(1.0f);
-            verBuf.put(-1f).put(1f).put(0f).put(1f);
-
-            verBuf.put(-1f).put(-1f).put(0f).put(0f);
-            verBuf.put(1.0f).put(-1.0f).put(1.0f).put(0f);
-            verBuf.put(1.0f).put(1.0f).put(1.0f).put(1.0f);
+            verBuf.put(quadVertices);
             verBuf.flip();
             vbo.uploadData(GL_ARRAY_BUFFER, verBuf, GL_STATIC_DRAW);
         }

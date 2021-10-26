@@ -6,5 +6,5 @@ uniform sampler2D screenTexture;
 
 void main()
 {
-    color = texture(screenTexture, TexCoords);
+    color = vec4(vec3(1.0 - texture(screenTexture, TexCoords)), 1.0);
 }

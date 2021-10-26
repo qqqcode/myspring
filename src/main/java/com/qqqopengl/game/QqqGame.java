@@ -58,6 +58,8 @@ public class QqqGame {
     ParticleGenerator particle;
     PostProcessor effects;
 
+    VertexArrayObject quadVAO;
+
     public GameState getState() {
         return state;
     }
@@ -194,6 +196,8 @@ public class QqqGame {
                 if (collision.getValue0()) {
                     if (!brick.isSolid) {
                         brick.destroyed = true;
+                        shakeTime = 0.5f;
+                        effects.shake = true;
                     }
                     Direction dir = collision.getValue1();
                     Vector2f diff_vector = collision.getValue2();

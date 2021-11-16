@@ -34,31 +34,44 @@
             <artifactId>netty</artifactId>
             <version>3.2.5.Final</version>
         </dependency>
-        <!-- activemq -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-pool</artifactId>
-            <version>5.15.0</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.activemq/activemq-core -->
-        <dependency>
-            <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-core</artifactId>
-            <version>5.7.0</version>
-        </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.activemq/activemq-core -->
+        <!-- https://mvnrepository.com/artifact/org.apache.activemq/artemis-jms-client -->
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-core</artifactId>
-            <version>5.7.0</version>
+            <artifactId>artemis-jms-client</artifactId>
+            <version>2.19.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.activemq/activemq-pool -->
+        <!-- https://mvnrepository.com/artifact/org.apache.activemq/artemis-server -->
         <dependency>
             <groupId>org.apache.activemq</groupId>
-            <artifactId>activemq-pool</artifactId>
+            <artifactId>artemis-server</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.activemq/artemis-commons -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-commons</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.activemq/artemis-jms-server -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jms-server</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.activemq/activemq-mqtt -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-mqtt</artifactId>
             <version>5.16.3</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.activemq/artemis-selector -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-selector</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.lwjgl</groupId>

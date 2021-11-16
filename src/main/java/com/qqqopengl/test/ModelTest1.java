@@ -21,38 +21,18 @@ public class ModelTest1 {
 
 
     QqqWindow qqqWindow;
-    int width = 1024;
-    int height = 768;
-    int fbWidth = 1024;
-    int fbHeight = 768;
+    int width = 800;
+    int height = 600;
+    int fbWidth = 800;
+    int fbHeight = 600;
     float fov = 60;
     float rotation;
 
     ShaderProgram shaderProgram;
-    int modelMatrixUniform;
-    int viewProjectionMatrixUniform;
-    int normalMatrixUniform;
-    int lightPositionUniform;
-    int viewPositionUniform;
     int ambientColorUniform;
     int diffuseColorUniform;
     int specularColorUniform;
-
     Model model;
-
-    Matrix4x3f modelMatrix = new Matrix4x3f().rotateY(0.5f * (float) Math.PI).scale(1.5f, 1.5f, 1.5f);
-    Matrix4x3f viewMatrix = new Matrix4x3f();
-    Matrix4f projectionMatrix = new Matrix4f();
-    Matrix4f viewProjectionMatrix = new Matrix4f();
-    Vector3f viewPosition = new Vector3f();
-    Vector3f lightPosition = new Vector3f(-5f, 5f, 5f);
-
-    private FloatBuffer modelMatrixBuffer = BufferUtils.createFloatBuffer(4 * 4);
-    private FloatBuffer viewProjectionMatrixBuffer = BufferUtils.createFloatBuffer(4 * 4);
-    private Matrix3f normalMatrix = new Matrix3f();
-    private FloatBuffer normalMatrixBuffer = BufferUtils.createFloatBuffer(3 * 3);
-    private FloatBuffer lightPositionBuffer = BufferUtils.createFloatBuffer(3);
-    private FloatBuffer viewPositionBuffer = BufferUtils.createFloatBuffer(3);
 
     Callback debugProc;
 
@@ -86,7 +66,7 @@ public class ModelTest1 {
             }
         });
         qqqWindow.setCursorPosCallback((window, x, y) -> {
-            rotation = ((float)x / width - 0.5f) * 2f * (float)Math.PI;
+            rotation = ((float) x / width - 0.5f) * 2f * (float) Math.PI;
         });
         qqqWindow.setScrollCallback((window, xoffset, yoffset) -> {
             if (yoffset < 0) {
@@ -105,48 +85,33 @@ public class ModelTest1 {
         glClearColor(0f, 0f, 0f, 1f);
         glEnable(GL_DEPTH_TEST);
 
-        model = new Model("magnet.obj");
+        model = new Model("Lowpoly_tree_sample.obj");
         createProgram();
         qqqWindow.showWindow();
     }
 
     void createProgram() throws IOException {
 
-        shaderProgram =ShaderUtil.createShaderProgram(Constant.resources + "magnet.vs",Constant.resources + "magnet.fs");
+        shaderProgram = ShaderUtil.createShaderProgram(Constant.resources + "vs/magnet.vs", Constant.resources + "frag/magnet.fs");
 
         shaderProgram.use();
-
-        modelMatrixUniform = shaderProgram.getUniformLocation("uModelMatrix");
-        viewProjectionMatrixUniform = shaderProgram.getUniformLocation("uViewProjectionMatrix");
-        normalMatrixUniform = shaderProgram.getUniformLocation("uNormalMatrix");
-        lightPositionUniform = shaderProgram.getUniformLocation("uLightPosition");
-        viewPositionUniform = shaderProgram.getUniformLocation("uViewPosition");
         ambientColorUniform = shaderProgram.getUniformLocation("uAmbientColor");
         diffuseColorUniform = shaderProgram.getUniformLocation("uDiffuseColor");
         specularColorUniform = shaderProgram.getUniformLocation("uSpecularColor");
     }
 
-    void update() {
-        projectionMatrix.setPerspective((float) Math.toRadians(fov), (float) width / height, 0.01f,
-                100.0f);
-        viewPosition.set(10f * (float) Math.cos(rotation), 10f, 10f * (float) Math.sin(rotation));
-        viewMatrix.setLookAt(viewPosition.x, viewPosition.y, viewPosition.z, 0f, 0f, 0f, 0f, 1f,
-                0f);
-        projectionMatrix.mul(viewMatrix, viewProjectionMatrix);
-    }
 
     void render() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderProgram.use();
-        shaderProgram.setUniformMatrix4f(modelMatrixUniform,modelMatrix.get4x4(modelMatrixBuffer));
-        shaderProgram.setUniformMatrix4f(viewProjectionMatrixUniform,viewProjectionMatrix.get(viewProjectionMatrixBuffer));
+        Vector3f viewPosition = new Vector3f(50f * (float) Math.cos(rotation), 50f, 50f * (float) Math.sin(rotation));
+        shaderProgram.setUniform("model",new Matrix4f());
+        shaderProgram.setUniform("view",new Matrix4f().lookAt(viewPosition, new Vector3f(), new Vector3f(0f, 1.0f, 0f)));
+        shaderProgram.setUniform("projection",new Matrix4f().setPerspective((float) Math.toRadians(fov), (float) width / height, 0.01f, 100.0f));
 
-        modelMatrix.normal(normalMatrix).invert().transpose();
-        shaderProgram.setUniformMatrix3f(normalMatrixUniform, normalMatrix.get(normalMatrixBuffer));
-
-        shaderProgram.setUniform3f(lightPositionUniform, lightPosition.get(lightPositionBuffer));
-        shaderProgram.setUniform3f(viewPositionUniform, viewPosition.get(viewPositionBuffer));
+        shaderProgram.setUniform("uLightPosition", new Vector3f(-25f, 70f, 70f));
+        shaderProgram.setUniform("uViewPosition", viewPosition);
 
         List<Mesh> meshes = model.getMeshes();
         for (Mesh mesh : meshes) {
@@ -162,7 +127,6 @@ public class ModelTest1 {
         while (!qqqWindow.isClosing()) {
             glfwPollEvents();
             glViewport(0, 0, fbWidth, fbHeight);
-            update();
             render();
             qqqWindow.update();
         }

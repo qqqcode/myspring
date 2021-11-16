@@ -12,6 +12,57 @@ public class GameObject {
     public boolean destroyed;
     public Texture sprite;
 
+    public static class Builder {
+        private Vector2f position;
+        private Vector2f size = new Vector2f(10.0f, 10.0f);
+        private Vector2f velocity;
+        private Vector3f color;
+        private float rotation;
+        private boolean isSolid;
+        private boolean destroyed;
+        private Texture sprite;
+
+        public Builder (Vector2f pos, Texture sprite) {
+            this.position = pos;
+            this.sprite = sprite;
+        }
+
+        public Builder size(Vector2f size) {
+            this.size = size;
+            return this;
+        }
+
+        public Builder velocity(Vector2f velocity) {
+            this.velocity = velocity;
+            return this;
+        }
+
+        public Builder color(Vector3f color) {
+            this.color = color;
+            return this;
+        }
+
+        public Builder rotation(float rotation) {
+            this.rotation = rotation;
+            return this;
+        }
+
+        public Builder isSolid(boolean isSolid) {
+            this.isSolid = isSolid;
+            return this;
+        }
+
+        public Builder destroyed(boolean destroyed){
+            this.destroyed = destroyed;
+            return this;
+        }
+
+
+        public GameObject build() {
+            return new GameObject(this);
+        }
+    }
+
     public GameObject(Vector2f pos, Texture block) {
         this.position = pos;
         this.sprite = block;
@@ -76,6 +127,17 @@ public class GameObject {
         this.isSolid = false;
         this.destroyed = false;
         this.sprite = sprite;
+    }
+
+    private GameObject(Builder builder) {
+        this.position = builder.position;
+        this.size = builder.size;
+        this.velocity = builder.velocity;
+        this.color = builder.color;
+        this.rotation = builder.rotation;
+        this.isSolid = builder.isSolid;
+        this.destroyed = builder.destroyed;
+        this.sprite = builder.sprite;
     }
 
     public void draw(SpriteRenderer renderer) {

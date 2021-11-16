@@ -1,6 +1,7 @@
 package com.qqqopengl.test;
 
 import com.qqqopengl.graphic.*;
+import com.qqqopengl.listener.KeyListener;
 import com.qqqopengl.util.Constant;
 import com.qqqopengl.util.ShaderUtil;
 import org.joml.*;
@@ -27,6 +28,9 @@ public class ModelTest1 {
     int fbHeight = 600;
     float fov = 60;
     float rotation;
+
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
 
     ShaderProgram shaderProgram;
     int ambientColorUniform;
@@ -95,9 +99,9 @@ public class ModelTest1 {
         shaderProgram = ShaderUtil.createShaderProgram(Constant.resources + "vs/magnet.vs", Constant.resources + "frag/magnet.fs");
 
         shaderProgram.use();
-        ambientColorUniform = shaderProgram.getUniformLocation("uAmbientColor");
-        diffuseColorUniform = shaderProgram.getUniformLocation("uDiffuseColor");
-        specularColorUniform = shaderProgram.getUniformLocation("uSpecularColor");
+        ambientColorUniform = shaderProgram.getUniformLocation("light.uAmbientColor");
+        diffuseColorUniform = shaderProgram.getUniformLocation("light.uDiffuseColor");
+        specularColorUniform = shaderProgram.getUniformLocation("light.uSpecularColor");
     }
 
 
@@ -105,7 +109,7 @@ public class ModelTest1 {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shaderProgram.use();
-        Vector3f viewPosition = new Vector3f(50f * (float) Math.cos(rotation), 50f, 50f * (float) Math.sin(rotation));
+        Vector3f viewPosition = new Vector3f(50f * (float) Math.cos(rotation), 25, 50f * (float) Math.sin(rotation));
         shaderProgram.setUniform("model",new Matrix4f());
         shaderProgram.setUniform("view",new Matrix4f().lookAt(viewPosition, new Vector3f(), new Vector3f(0f, 1.0f, 0f)));
         shaderProgram.setUniform("projection",new Matrix4f().setPerspective((float) Math.toRadians(fov), (float) width / height, 0.01f, 100.0f));
